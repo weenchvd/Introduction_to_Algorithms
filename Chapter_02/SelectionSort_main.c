@@ -1,11 +1,11 @@
-/* Chapter 2.1 | Insertion-Sort */
+/* Chapter 2.2 | Selection-Sort */
 
 #include <stdio.h>
 #include <stdlib.h>
 
 enum returntype { ERROR = -1, SUCCESS };
 
-void InsertionSort(int* a, size_t length, int type);
+void SelectionSort(int* a, size_t length, int type);
 
 int main(int argc, char* argv[])
 {
@@ -29,8 +29,8 @@ int main(int argc, char* argv[])
 		a1[length] = a2[length] = atoi(argv[i]);
 		length++;
 	}
-	InsertionSort(a1, length, 1);
-	InsertionSort(a2, length, 0);
+	SelectionSort(a1, length, 1);
+	SelectionSort(a2, length, 0);
 	printf("\nNondecreasing order:\n");
 	for (i = 0; i < length; ++i) {
 		printf("%d ", a1[i]);
