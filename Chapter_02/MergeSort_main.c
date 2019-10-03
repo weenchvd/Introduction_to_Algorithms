@@ -1,11 +1,11 @@
-/* Chapter 2.2 | Selection-Sort */
+/* Chapter 2.3 | Merge-Sort */
 
 #include <stdio.h>
 #include <stdlib.h>
 
 enum returntype { ERROR = -1, SUCCESS };
 
-void SelectionSort(int* a, size_t length, int type);
+void MergeSort(int* a, long long int first, long long int last, int type);
 
 int main(int argc, char* argv[])
 {
@@ -29,8 +29,8 @@ int main(int argc, char* argv[])
 		a1[length] = a2[length] = atoi(argv[i]);
 		length++;
 	}
-	SelectionSort(a1, length, 1);
-	SelectionSort(a2, length, 0);
+	MergeSort(a1, 0, length - 1, 1);
+	MergeSort(a2, 0, length - 1, 0);
 	printf("\nNondecreasing order:\n");
 	for (i = 0; i < length; ++i) {
 		printf("%d ", a1[i]);

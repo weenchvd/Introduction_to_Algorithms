@@ -13,15 +13,15 @@ int main(int argc, char* argv[])
 	int i;
 	size_t length;
 	if (argc < 2) {
-		printf("\n\t\t-----Please enter a list of numbers to sort as arguments to the program-----");
+		printf("\n\n\t| ERROR | Please enter a list of numbers to sort as arguments to the program |\n");
 		return ERROR;
 	}
 	if ((a1 = malloc(sizeof(int) * ((size_t)argc - 1))) == NULL) {
-		printf("\n\t\t-----Memory allocator error. No memory allocated-----");
+		printf("\n\n\t| ERROR | Memory allocator error. No memory allocated |\n");
 		return ERROR;
 	}
 	if ((a2 = malloc(sizeof(int) * ((size_t)argc - 1))) == NULL) {
-		printf("\n\t\t-----Memory allocator error. No memory allocated-----");
+		printf("\n\n\t| ERROR | Memory allocator error. No memory allocated |\n");
 		return ERROR;
 	}
 	length = 0;
@@ -35,10 +35,12 @@ int main(int argc, char* argv[])
 	for (i = 0; i < length; ++i) {
 		printf("%d ", a1[i]);
 	}
-	printf("\nNonincreasing order:\n");
+	printf("\n\nNonincreasing order:\n");
 	for (i = 0; i < length; ++i) {
 		printf("%d ", a2[i]);
 	}
 	putchar('\n');
+	free(a1);
+	free(a2);
 	return SUCCESS;
 }
