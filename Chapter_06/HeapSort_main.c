@@ -16,45 +16,45 @@ int main(int argc, char* argv[])
 		printf("\n\n\t| ERROR | Please enter a list of numbers to sort as arguments to the program |\n");
 		return FAILURE;
 	}
-	if ((a1 = malloc(sizeof(int) * ((size_t)argc - 1))) == NULL) {
+	if ((a1 = malloc(sizeof(int) * ((size_t)argc - 1 + FIRSTITEMOFARRAY))) == NULL) {
 		printf("\n\n\t| ERROR | Memory allocator error. No memory allocated |\n");
 		return FAILURE;
 	}
-	if ((a2 = malloc(sizeof(int) * ((size_t)argc - 1))) == NULL) {
+	if ((a2 = malloc(sizeof(int) * ((size_t)argc - 1 + FIRSTITEMOFARRAY))) == NULL) {
 		printf("\n\n\t| ERROR | Memory allocator error. No memory allocated |\n");
 		return FAILURE;
 	}
-	if ((a3 = malloc(sizeof(int) * ((size_t)argc - 1))) == NULL) {
+	if ((a3 = malloc(sizeof(int) * ((size_t)argc - 1 + FIRSTITEMOFARRAY))) == NULL) {
 		printf("\n\n\t| ERROR | Memory allocator error. No memory allocated |\n");
 		return FAILURE;
 	}
-	if ((a4 = malloc(sizeof(int) * ((size_t)argc - 1))) == NULL) {
+	if ((a4 = malloc(sizeof(int) * ((size_t)argc - 1 + FIRSTITEMOFARRAY))) == NULL) {
 		printf("\n\n\t| ERROR | Memory allocator error. No memory allocated |\n");
 		return FAILURE;
 	}
-	length = 0;
+	length = FIRSTITEMOFARRAY - 1;
 	for (i = 1; i < argc; ++i) {
-		a1[length] = a2[length] = a3[length] = a4[length] = atoi(argv[i]);
 		length++;
+		a1[length] = a2[length] = a3[length] = a4[length] = atoi(argv[i]);
 	}
 	HeapSortRecursive(a1, length, 1);
 	HeapSortRecursive(a2, length, 0);
 	HeapSortIterative(a3, length, 1);
 	HeapSortIterative(a4, length, 0);
 	printf("\nNondecreasing order (recursive):\n");
-	for (i = 0; i < length; ++i) {
+	for (i = FIRSTITEMOFARRAY; i <= length; ++i) {
 		printf("%d ", a1[i]);
 	}
 	printf("\n\nNonincreasing order (recursive):\n");
-	for (i = 0; i < length; ++i) {
+	for (i = FIRSTITEMOFARRAY; i <= length; ++i) {
 		printf("%d ", a2[i]);
 	}
 	printf("\n\nNondecreasing order (iterative):\n");
-	for (i = 0; i < length; ++i) {
+	for (i = FIRSTITEMOFARRAY; i <= length; ++i) {
 		printf("%d ", a3[i]);
 	}
 	printf("\n\nNonincreasing order (iterative):\n");
-	for (i = 0; i < length; ++i) {
+	for (i = FIRSTITEMOFARRAY; i <= length; ++i) {
 		printf("%d ", a4[i]);
 	}
 	putchar('\n');

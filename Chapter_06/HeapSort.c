@@ -17,11 +17,11 @@ void HeapSortNondecreasingOrderR(int* a, int size)
 {
 	int i, tmp;
 	BuildMaxHeapR(a, size);
-	for (i = size - 1; i > 0; i--) {
-		tmp = a[0];
-		a[0] = a[i];
-		a[i] = tmp;
-		MaxHeapifyR(a, i, 0);
+	for (i = size; i >= 2;) {
+		tmp = a[FIRSTITEMOFARRAY];
+		a[FIRSTITEMOFARRAY] = a[i];
+		a[i--] = tmp;
+		MaxHeapifyR(a, i, FIRSTITEMOFARRAY);
 	}
 	return;
 }
@@ -29,7 +29,7 @@ void HeapSortNondecreasingOrderR(int* a, int size)
 void BuildMaxHeapR(int* a, int size)
 {
 	int i;
-	for (i = (size >> 1) - 1; i >= 0; i--) {
+	for (i = size >> 1; i >= 1; i--) {
 		MaxHeapifyR(a, size, i);
 	}
 	return;
@@ -40,13 +40,13 @@ void MaxHeapifyR(int* a, int size, int index)
 	int left, right, largest, tmp;
 	left = LEFT(index);
 	right = RIGHT(index);
-	if (left < size && a[left] > a[index]) {
+	if (left <= size && a[left] > a[index]) {
 		largest = left;
 	}
 	else {
 		largest = index;
 	}
-	if (right < size && a[right] > a[largest]) {
+	if (right <= size && a[right] > a[largest]) {
 		largest = right;
 	}
 	if (largest != index) {
@@ -62,11 +62,11 @@ void HeapSortNonincreasingOrderR(int* a, int size)
 {
 	int i, tmp;
 	BuildMinHeapR(a, size);
-	for (i = size - 1; i > 0; i--) {
-		tmp = a[0];
-		a[0] = a[i];
-		a[i] = tmp;
-		MinHeapifyR(a, i, 0);
+	for (i = size; i >= 2;) {
+		tmp = a[FIRSTITEMOFARRAY];
+		a[FIRSTITEMOFARRAY] = a[i];
+		a[i--] = tmp;
+		MinHeapifyR(a, i, FIRSTITEMOFARRAY);
 	}
 	return;
 }
@@ -74,7 +74,7 @@ void HeapSortNonincreasingOrderR(int* a, int size)
 void BuildMinHeapR(int* a, int size)
 {
 	int i;
-	for (i = (size >> 1) - 1; i >= 0; i--) {
+	for (i = size >> 1; i >= 1; i--) {
 		MinHeapifyR(a, size, i);
 	}
 	return;
@@ -85,13 +85,13 @@ void MinHeapifyR(int* a, int size, int index)
 	int left, right, smallest, tmp;
 	left = LEFT(index);
 	right = RIGHT(index);
-	if (left < size && a[left] < a[index]) {
+	if (left <= size && a[left] < a[index]) {
 		smallest = left;
 	}
 	else {
 		smallest = index;
 	}
-	if (right < size && a[right] < a[smallest]) {
+	if (right <= size && a[right] < a[smallest]) {
 		smallest = right;
 	}
 	if (smallest != index) {
@@ -121,11 +121,11 @@ void HeapSortNondecreasingOrderI(int* a, int size)
 {
 	int i, tmp;
 	BuildMaxHeapI(a, size);
-	for (i = size - 1; i > 0; i--) {
-		tmp = a[0];
-		a[0] = a[i];
-		a[i] = tmp;
-		MaxHeapifyI(a, i, 0);
+	for (i = size; i >= 2;) {
+		tmp = a[FIRSTITEMOFARRAY];
+		a[FIRSTITEMOFARRAY] = a[i];
+		a[i--] = tmp;
+		MaxHeapifyI(a, i, FIRSTITEMOFARRAY);
 	}
 	return;
 }
@@ -133,7 +133,7 @@ void HeapSortNondecreasingOrderI(int* a, int size)
 void BuildMaxHeapI(int* a, int size)
 {
 	int i;
-	for (i = (size >> 1) - 1; i >= 0; i--) {
+	for (i = size >> 1; i >= 1; i--) {
 		MaxHeapifyI(a, size, i);
 	}
 	return;
@@ -146,13 +146,13 @@ void MaxHeapifyI(int* a, int size, int index)
 	{
 		left = LEFT(index);
 		right = RIGHT(index);
-		if (left < size && a[left] > a[index]) {
+		if (left <= size && a[left] > a[index]) {
 			largest = left;
 		}
 		else {
 			largest = index;
 		}
-		if (right < size && a[right] > a[largest]) {
+		if (right <= size && a[right] > a[largest]) {
 			largest = right;
 		}
 		if (largest != index) {
@@ -172,11 +172,11 @@ void HeapSortNonincreasingOrderI(int* a, int size)
 {
 	int i, tmp;
 	BuildMinHeapI(a, size);
-	for (i = size - 1; i > 0; i--) {
-		tmp = a[0];
-		a[0] = a[i];
-		a[i] = tmp;
-		MinHeapifyI(a, i, 0);
+	for (i = size; i >= 2;) {
+		tmp = a[FIRSTITEMOFARRAY];
+		a[FIRSTITEMOFARRAY] = a[i];
+		a[i--] = tmp;
+		MinHeapifyI(a, i, FIRSTITEMOFARRAY);
 	}
 	return;
 }
@@ -184,7 +184,7 @@ void HeapSortNonincreasingOrderI(int* a, int size)
 void BuildMinHeapI(int* a, int size)
 {
 	int i;
-	for (i = (size >> 1) - 1; i >= 0; i--) {
+	for (i = size >> 1; i >= 1; i--) {
 		MinHeapifyI(a, size, i);
 	}
 	return;
@@ -197,13 +197,13 @@ void MinHeapifyI(int* a, int size, int index)
 	{
 		left = LEFT(index);
 		right = RIGHT(index);
-		if (left < size && a[left] < a[index]) {
+		if (left <= size && a[left] < a[index]) {
 			smallest = left;
 		}
 		else {
 			smallest = index;
 		}
-		if (right < size && a[right] < a[smallest]) {
+		if (right <= size && a[right] < a[smallest]) {
 			smallest = right;
 		}
 		if (smallest != index) {
