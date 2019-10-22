@@ -12,11 +12,15 @@ set (FILE_NAME QuickSort_main)
 set (SOURCE_C_LIST ${FILE_NAME}.c QuickSort.c)
 set (FILE_NAME_2 RandomizedQuickSort_main)
 set (SOURCE_C_LIST_2 ${FILE_NAME_2}.c RandomizedQuickSort.c)
+set (FILE_NAME_3 HoareQuickSort_main)
+set (SOURCE_C_LIST_3 ${FILE_NAME_3}.c HoareQuickSort.c)
 
 # Add source to this project's executable.
 add_executable (${FILE_NAME} ${SOURCE_C_LIST})
 add_executable (${FILE_NAME_2} ${SOURCE_C_LIST_2})
+add_executable (${FILE_NAME_3} ${SOURCE_C_LIST_3})
 
 # TODO: Add tests and install targets if needed.
 install (TARGETS ${FILE_NAME} DESTINATION Build)
 install (TARGETS ${FILE_NAME_2} DESTINATION Build)
+install (TARGETS ${FILE_NAME_3} DESTINATION Build)
