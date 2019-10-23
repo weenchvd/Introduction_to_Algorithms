@@ -9,5 +9,7 @@ set (CMAKE_INSTALL_PREFIX ${PROJECT_SOURCE_DIR}/)
 
 # Include sub-projects.
 add_subdirectory ("Chapter_02")
+add_subdirectory ("Chapter_04")
 add_subdirectory ("Chapter_06")
 add_subdirectory ("Chapter_07")
+add_subdirectory ("Chapter_08")
