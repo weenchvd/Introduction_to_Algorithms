@@ -1,10 +1,12 @@
 /* Chapter 9.2 | Randomized-Select */
+/* Exercise 9.2-3 | Randomized-Select-Iterative */
 
 #include "RandomizedSelect_common.h"
 #include <stdio.h>
 #include <stdlib.h>
 
-int RandomizedSelect(int* a, int first, int last, int i);;
+int RandomizedSelect(int* a, int first, int last, int i);
+int RandomizedSelectI(int* a, int first, int last, int i);
 
 int main(int argc, char* argv[])
 {
@@ -36,7 +38,7 @@ int main(int argc, char* argv[])
 		}
 	}
 	printf("\nThe smallest element of the array at number %d: %d", num, RandomizedSelect(a1, 0, size - 1, num));
-	putchar('\n');
+	printf("\nThe smallest element of the array at number %d (iterative): %d\n", num, RandomizedSelectI(a1, 0, size - 1, num));
 	free(a1);
 	return SUCCESS;
 }

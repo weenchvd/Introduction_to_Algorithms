@@ -19,6 +19,31 @@ int RandomizedSelect(int* a, int first, int last, int i)
 	}
 }
 
+int RandomizedSelectI(int* a, int first, int last, int i)
+{
+	int k, middle, num;
+	while (TRUE) {
+		if (first == last) {
+			num = a[first];
+			break;
+		}
+		middle = RandomizedPartition(a, first, last);
+		k = middle - first + 1;
+		if (i == k) {
+			num = a[middle];
+			break;
+		}
+		else if (i < k) {
+			last = middle - 1;
+		}
+		else {
+			first = middle + 1;
+			i -= k;
+		}
+	}
+	return num;
+}
+
 int RandomizedPartition(int* a, int first, int last)
 {
 	int i, tmp;
