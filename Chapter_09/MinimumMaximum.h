@@ -1,5 +1,5 @@
-﻿#ifndef _COUNTINGSORT_H
-#define _COUNTINGSORT_H
+﻿#ifndef _MINIMUMMAXIMUM_H
+#define _MINIMUMMAXIMUM_H
 
 #include "MinimumMaximum_common.h"
 

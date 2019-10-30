@@ -1,5 +1,5 @@
-﻿#ifndef _COUNTINGSORT_H
-#define _COUNTINGSORT_H
+﻿#ifndef _RANDOMIZEDSELECT_H
+#define _RANDOMIZEDSELECT_H
 
 #include "RandomizedSelect_common.h"
 #include <stdlib.h>
