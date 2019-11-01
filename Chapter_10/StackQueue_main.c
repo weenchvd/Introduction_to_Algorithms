@@ -1,11 +1,11 @@
 /* Chapter 10.1 | Stack-Queue */
+/* Exercise 10.1-4 | Stack-Queue */
 
 #include "StackQueue_common.h"
 #include "StackQueue_struct.h"
 #include <stdio.h>
 #include <stdlib.h>
 
-int StackEmpty(StackSet_t* s);
 void Push(StackSet_t* s, int x);
 int Pop(StackSet_t* s);
 void Enqueue(QueueSet_t* q, int x);
@@ -16,7 +16,8 @@ int main(void)
 	int number, action;
 	StackSet_t s;
 	QueueSet_t q;
-	s.top = q.head = q.tail = ARRAYSTARTINDEX;
+	s.top = ARRAYSTARTINDEX - 1;
+	q.head = q.tail = ARRAYSTARTINDEX;
 	printf("List of action:\n\t1 (Push), 2 (Pop), 3 (Enqueue), 4 (Dequeue)\n\n");
 	while (TRUE) {
 		printf("Please enter an action: ");
