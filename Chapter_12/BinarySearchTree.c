@@ -156,3 +156,84 @@ void BinarySearchTreePrintRecursivePostorder(BinarySearchTree_t* root)
 	}
 	return;
 }
+
+BinarySearchTree_t* BinarySearchTreeSearchRecursive(BinarySearchTree_t* root, int key)
+{
+	if (root == NULL || key == root->key) {
+		return root;
+	}
+	if (key < root->key) {
+		return BinarySearchTreeSearchRecursive(root->left, key);
+	}
+	else {
+		return BinarySearchTreeSearchRecursive(root->right, key);
+	}
+}
+
+BinarySearchTree_t* BinarySearchTreeSearchIterative(BinarySearchTree_t* root, int key)
+{
+	while (root != NULL && key != root->key) {
+		root = (key < root->key) ? root->left : root->right;
+	}
+	return root;
+}
+
+BinarySearchTree_t* BinarySearchTreeMinimumIterative(BinarySearchTree_t* root)
+{
+	while (root->left != NULL) {
+		root = root->left;
+	}
+	return root;
+}
+
+BinarySearchTree_t* BinarySearchTreeMinimumRecursive(BinarySearchTree_t* root)
+{
+	if (root->left == NULL) {
+		return root;
+	}
+	return BinarySearchTreeMinimumRecursive(root->left);
+}
+
+BinarySearchTree_t* BinarySearchTreeMaximumIterative(BinarySearchTree_t* root)
+{
+	while (root->right != NULL) {
+		root = root->right;
+	}
+	return root;
+}
+
+BinarySearchTree_t* BinarySearchTreeMaximumRecursive(BinarySearchTree_t* root)
+{
+	if (root->right == NULL) {
+		return root;
+	}
+	return BinarySearchTreeMaximumRecursive(root->right);
+}
+
+BinarySearchTree_t* BinarySearchTreeSuccessor(BinarySearchTree_t* root)
+{
+	BinarySearchTree_t* prev;
+	if (root->right != NULL) {
+		return BinarySearchTreeMinimumIterative(root->right);
+	}
+	prev = (root->parent != NULL) ? root->parent : NULL;
+	while (prev != NULL && root == prev->right) {
+		root = prev;
+		prev = prev->parent;
+	}
+	return prev;
+}
+
+BinarySearchTree_t* BinarySearchTreePredecessor(BinarySearchTree_t* root)
+{
+	BinarySearchTree_t* prev;
+	if (root->left != NULL) {
+		return BinarySearchTreeMaximumIterative(root->left);
+	}
+	prev = (root->parent != NULL) ? root->parent : NULL;
+	while (prev != NULL && root == prev->left) {
+		root = prev;
+		prev = prev->parent;
+	}
+	return prev;
+}
