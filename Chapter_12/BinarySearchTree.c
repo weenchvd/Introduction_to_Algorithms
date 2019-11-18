@@ -1,54 +1,74 @@
 ﻿#include "BinarySearchTree.h"
 
-void BinarySearchTreeInsert(BinarySearchTree_t** root, int key, int* number)
+BST_t* BSTCreateNode(int key, int* number)
 {
-	BinarySearchTree_t* node, * newnode;
-	if ((newnode = malloc(sizeof(BinarySearchTree_t))) == NULL) {
+	BST_t* node;
+	if ((node = malloc(sizeof(BST_t))) == NULL) {
 		printf("\n\n\t| ERROR | Memory allocator error. No memory allocated |\n");
-		return;
+		return NULL;
 	}
-	newnode->left = NULL;
-	newnode->right = NULL;
-	newnode->key = key;
+	node->parent = NULL;
+	node->left = NULL;
+	node->right = NULL;
+	node->key = key;
 	(*number)++;
-	if (*root != NULL) {
-		node = *root;
-		while (TRUE) {
-			if (key < node->key) {
-				if (node->left != NULL) {
-					node = node->left;
-				}
-				else {
-					node->left = newnode;
-					newnode->parent = node;
-					break;
-				}
-			}
-			else {
-				if (node->right != NULL) {
-					node = node->right;
-				}
-				else {
-					node->right = newnode;
-					newnode->parent = node;
-					break;
-				}
-			}
-		}
+	return node;
+}
+
+void BSTInsertIterative(BST_t** root, BST_t* newnode)
+{
+	BST_t* node, * prev;
+	prev = NULL;
+	node = *root;
+	while (node != NULL) {
+		prev = node;
+		node = (newnode->key < node->key) ? node->left : node->right;
+	}
+	newnode->parent = prev;
+	if (prev == NULL) {
+		*root = newnode;
+	}
+	else if (newnode->key < prev->key) {
+		prev->left = newnode;
 	}
 	else {
-		*root = newnode;
-		newnode->parent = NULL;
+		prev->right = newnode;
 	}
 	return;
 }
 
-void BinarySearchTreePrintWithStack(BinarySearchTree_t* root, int number)
+void BSTInsertRecursive(BST_t** root, BST_t* newnode)
 {
-	BinarySearchTree_t* node;
+	if (*root == NULL) {
+		*root = newnode;
+	}
+	else if (newnode->key < (*root)->key) {
+		if ((*root)->left == NULL) {
+			(*root)->left = newnode;
+			newnode->parent = *root;
+		}
+		else {
+			BSTInsertRecursive(&(*root)->left, newnode);
+		}
+	}
+	else {
+		if ((*root)->right == NULL) {
+			(*root)->right = newnode;
+			newnode->parent = *root;
+		}
+		else {
+			BSTInsertRecursive(&(*root)->right, newnode);
+		}
+	}
+	return;
+}
+
+void BSTPrintWithStack(BST_t* root, int number)
+{
+	BST_t* node;
 	BSTStackSet_t s;
 	s.ptr = 0;
-	if ((s.stack = malloc(sizeof(BinarySearchTree_t*) * ((size_t)number + 1))) == NULL) {
+	if ((s.stack = malloc(sizeof(BST_t*) * ((size_t)number + 1))) == NULL) {
 		printf("\n\n\t| ERROR | Memory allocator error. No memory allocated |\n");
 		return;
 	}
@@ -69,9 +89,9 @@ void BinarySearchTreePrintWithStack(BinarySearchTree_t* root, int number)
 	return;
 }
 
-void BinarySearchTreePrintWithPointer(BinarySearchTree_t* root)
+void BSTPrintWithPointer(BST_t* root)
 {
-	BinarySearchTree_t* node, * prev;
+	BST_t* node, * prev;
 	if (root == NULL) {
 		return;
 	}
@@ -127,50 +147,50 @@ void BinarySearchTreePrintWithPointer(BinarySearchTree_t* root)
 	return;
 }
 
-void BinarySearchTreePrintRecursiveInorder(BinarySearchTree_t* root)
+void BSTPrintRecursiveInorder(BST_t* root)
 {
 	if (root != NULL) {
-		BinarySearchTreePrintRecursiveInorder(root->left);
+		BSTPrintRecursiveInorder(root->left);
 		printf("\t\tKey: %8d\n", root->key);
-		BinarySearchTreePrintRecursiveInorder(root->right);
+		BSTPrintRecursiveInorder(root->right);
 	}
 	return;
 }
 
-void BinarySearchTreePrintRecursivePreorder(BinarySearchTree_t* root)
+void BSTPrintRecursivePreorder(BST_t* root)
 {
 	if (root != NULL) {
 		printf("\t\tKey: %8d\n", root->key);
-		BinarySearchTreePrintRecursivePreorder(root->left);
-		BinarySearchTreePrintRecursivePreorder(root->right);
+		BSTPrintRecursivePreorder(root->left);
+		BSTPrintRecursivePreorder(root->right);
 	}
 	return;
 }
 
-void BinarySearchTreePrintRecursivePostorder(BinarySearchTree_t* root)
+void BSTPrintRecursivePostorder(BST_t* root)
 {
 	if (root != NULL) {
-		BinarySearchTreePrintRecursivePostorder(root->left);
-		BinarySearchTreePrintRecursivePostorder(root->right);
+		BSTPrintRecursivePostorder(root->left);
+		BSTPrintRecursivePostorder(root->right);
 		printf("\t\tKey: %8d\n", root->key);
 	}
 	return;
 }
 
-BinarySearchTree_t* BinarySearchTreeSearchRecursive(BinarySearchTree_t* root, int key)
+BST_t* BSTSearchRecursive(BST_t* root, int key)
 {
 	if (root == NULL || key == root->key) {
 		return root;
 	}
 	if (key < root->key) {
-		return BinarySearchTreeSearchRecursive(root->left, key);
+		return BSTSearchRecursive(root->left, key);
 	}
 	else {
-		return BinarySearchTreeSearchRecursive(root->right, key);
+		return BSTSearchRecursive(root->right, key);
 	}
 }
 
-BinarySearchTree_t* BinarySearchTreeSearchIterative(BinarySearchTree_t* root, int key)
+BST_t* BSTSearchIterative(BST_t* root, int key)
 {
 	while (root != NULL && key != root->key) {
 		root = (key < root->key) ? root->left : root->right;
@@ -178,7 +198,7 @@ BinarySearchTree_t* BinarySearchTreeSearchIterative(BinarySearchTree_t* root, in
 	return root;
 }
 
-BinarySearchTree_t* BinarySearchTreeMinimumIterative(BinarySearchTree_t* root)
+BST_t* BSTMinimumIterative(BST_t* root)
 {
 	while (root->left != NULL) {
 		root = root->left;
@@ -186,15 +206,15 @@ BinarySearchTree_t* BinarySearchTreeMinimumIterative(BinarySearchTree_t* root)
 	return root;
 }
 
-BinarySearchTree_t* BinarySearchTreeMinimumRecursive(BinarySearchTree_t* root)
+BST_t* BSTMinimumRecursive(BST_t* root)
 {
 	if (root->left == NULL) {
 		return root;
 	}
-	return BinarySearchTreeMinimumRecursive(root->left);
+	return BSTMinimumRecursive(root->left);
 }
 
-BinarySearchTree_t* BinarySearchTreeMaximumIterative(BinarySearchTree_t* root)
+BST_t* BSTMaximumIterative(BST_t* root)
 {
 	while (root->right != NULL) {
 		root = root->right;
@@ -202,19 +222,19 @@ BinarySearchTree_t* BinarySearchTreeMaximumIterative(BinarySearchTree_t* root)
 	return root;
 }
 
-BinarySearchTree_t* BinarySearchTreeMaximumRecursive(BinarySearchTree_t* root)
+BST_t* BSTMaximumRecursive(BST_t* root)
 {
 	if (root->right == NULL) {
 		return root;
 	}
-	return BinarySearchTreeMaximumRecursive(root->right);
+	return BSTMaximumRecursive(root->right);
 }
 
-BinarySearchTree_t* BinarySearchTreeSuccessor(BinarySearchTree_t* root)
+BST_t* BSTSuccessor(BST_t* root)
 {
-	BinarySearchTree_t* prev;
+	BST_t* prev;
 	if (root->right != NULL) {
-		return BinarySearchTreeMinimumIterative(root->right);
+		return BSTMinimumIterative(root->right);
 	}
 	prev = (root->parent != NULL) ? root->parent : NULL;
 	while (prev != NULL && root == prev->right) {
@@ -224,11 +244,11 @@ BinarySearchTree_t* BinarySearchTreeSuccessor(BinarySearchTree_t* root)
 	return prev;
 }
 
-BinarySearchTree_t* BinarySearchTreePredecessor(BinarySearchTree_t* root)
+BST_t* BSTPredecessor(BST_t* root)
 {
-	BinarySearchTree_t* prev;
+	BST_t* prev;
 	if (root->left != NULL) {
-		return BinarySearchTreeMaximumIterative(root->left);
+		return BSTMaximumIterative(root->left);
 	}
 	prev = (root->parent != NULL) ? root->parent : NULL;
 	while (prev != NULL && root == prev->left) {
@@ -236,4 +256,45 @@ BinarySearchTree_t* BinarySearchTreePredecessor(BinarySearchTree_t* root)
 		prev = prev->parent;
 	}
 	return prev;
+}
+
+void BSTTransplant(BST_t** root, BST_t* receiver, BST_t* source)
+{
+	if (receiver->parent == NULL) {
+		*root = source;
+	}
+	else if (receiver == receiver->parent->left) {
+		receiver->parent->left = source;
+	}
+	else {
+		receiver->parent->right = source;
+	}
+	if (source != NULL) {
+		source->parent = receiver->parent;
+	}
+	return;
+}
+
+void BSTDelete(BST_t** root, BST_t* node)
+{
+	BST_t* min;
+	if (node->left == NULL) {
+		BSTTransplant(root, node, node->right);
+	}
+	else if (node->right == NULL) {
+		BSTTransplant(root, node, node->left);
+	}
+	else {
+		min = BSTMinimumIterative(node->right);
+		if (min->parent != node) {
+			BSTTransplant(root, min, min->right);
+			min->right = node->right;
+			min->right->parent = min;
+		}
+		BSTTransplant(root, node, min);
+		min->left = node->left;
+		min->left->parent = min;
+	}
+	free(node);
+	return;
 }

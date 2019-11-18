@@ -4,37 +4,42 @@
 /* Chapter 12.2 | Binary-Search-Tree */
 /* Exercise 12.2-2 | Binary-Search-Tree */
 /* Exercise 12.2-3 | Binary-Search-Tree */
+/* Chapter 12.3 | Binary-Search-Tree */
+/* Exercise 12.3-1 | Binary-Search-Tree */
 
 #include "BinarySearchTree_common.h"
 #include "BinarySearchTree_struct.h"
 #include <stdio.h>
 #include <stdlib.h>
 
-void BinarySearchTreeInsert(BinarySearchTree_t** root, int key, int* number);
-void BinarySearchTreePrintWithStack(BinarySearchTree_t* root, int number);
-void BinarySearchTreePrintWithPointer(BinarySearchTree_t* root);
-void BinarySearchTreePrintRecursiveInorder(BinarySearchTree_t* root);
-void BinarySearchTreePrintRecursivePreorder(BinarySearchTree_t* root);
-void BinarySearchTreePrintRecursivePostorder(BinarySearchTree_t* root);
-BinarySearchTree_t* BinarySearchTreeSearchRecursive(BinarySearchTree_t* root, int key);
-BinarySearchTree_t* BinarySearchTreeSearchIterative(BinarySearchTree_t* root, int key);
-BinarySearchTree_t* BinarySearchTreeMinimumIterative(BinarySearchTree_t* root);
-BinarySearchTree_t* BinarySearchTreeMinimumRecursive(BinarySearchTree_t* root);
-BinarySearchTree_t* BinarySearchTreeMaximumIterative(BinarySearchTree_t* root);
-BinarySearchTree_t* BinarySearchTreeMaximumRecursive(BinarySearchTree_t* root);
-BinarySearchTree_t* BinarySearchTreeSuccessor(BinarySearchTree_t* root);
-BinarySearchTree_t* BinarySearchTreePredecessor(BinarySearchTree_t* root);
+BST_t* BSTCreateNode(int key, int* number);
+void BSTInsertIterative(BST_t** root, BST_t* newnode);
+void BSTInsertRecursive(BST_t** root, BST_t* newnode);
+void BSTPrintWithStack(BST_t* root, int number);
+void BSTPrintWithPointer(BST_t* root);
+void BSTPrintRecursiveInorder(BST_t* root);
+void BSTPrintRecursivePreorder(BST_t* root);
+void BSTPrintRecursivePostorder(BST_t* root);
+BST_t* BSTSearchRecursive(BST_t* root, int key);
+BST_t* BSTSearchIterative(BST_t* root, int key);
+BST_t* BSTMinimumIterative(BST_t* root);
+BST_t* BSTMinimumRecursive(BST_t* root);
+BST_t* BSTMaximumIterative(BST_t* root);
+BST_t* BSTMaximumRecursive(BST_t* root);
+BST_t* BSTSuccessor(BST_t* root);
+BST_t* BSTPredecessor(BST_t* root);
+void BSTDelete(BST_t** root, BST_t* node);
 
 int main(void)
 {
 	int action, key, number;
 	char* list = "\tList of action:\n 0 (List of action), "
-		"1 (BinarySearchTreeInsert), 2 (BinarySearchTreePrintWithStack), 3 (BinarySearchTreePrintWithPointer), "
-		"4 (BinarySearchTreePrintRecursiveInorder), 5 (BinarySearchTreePrintRecursivePreorder), 6 (BinarySearchTreePrintRecursivePostorder), "
-		"7 (BinarySearchTreeSearchRecursive), 8 (BinarySearchTreeSearchIterative), 9 (BinarySearchTreeMinimumIterative), "
-		"10 (BinarySearchTreeMinimumRecursive), 11 (BinarySearchTreeMaximumIterative), 12 (BinarySearchTreeMaximumRecursive), "
-		"13 (BinarySearchTreeSuccessor), 14 (BinarySearchTreePredecessor)\n\n";
-	BinarySearchTree_t* root, * node;
+		"1 (BSTInsertIterative), 2 (BSTInsertRecursive), 3 (BSTPrintWithStack), 4 (BSTPrintWithPointer), "
+		"5 (BSTPrintRecursiveInorder), 6 (BSTPrintRecursivePreorder), 7 (BSTPrintRecursivePostorder), "
+		"8 (BSTSearchRecursive), 9 (BSTSearchIterative), 10 (BSTMinimumIterative), "
+		"11 (BSTMinimumRecursive), 12 (BSTMaximumIterative), 13 (BSTMaximumRecursive), "
+		"14 (BSTSuccessor), 15 (BSTPredecessor), 16 (BSTDelete)\n\n";
+	BST_t* root, * node;
 	root = NULL;
 	number = 0;
 	printf(list);
@@ -54,36 +59,47 @@ int main(void)
 				printf("\n\n\t| ERROR | Incorrect input |\n");
 				return FAILURE;
 			}
-			BinarySearchTreeInsert(&root, key, &number);
-			printf("Node inserted!\n");
+			if ((node = BSTCreateNode(key, &number)) != NULL) {
+				BSTInsertIterative(&root, node);
+				printf("Node inserted!\n");
+			}
+			else {
+				printf("Insert failed!\n");
+			}
 			break;
 		case 2:
-			printf("\tBinarySearchTreePrintWithStack:\n");
-			BinarySearchTreePrintWithStack(root, number);
-			break;
-		case 3:
-			printf("\tBinarySearchTreePrintWithPointer:\n");
-			BinarySearchTreePrintWithPointer(root);
-			break;
-		case 4:
-			printf("\tBinarySearchTreePrintRecursiveInorder:\n");
-			BinarySearchTreePrintRecursiveInorder(root);
-			break;
-		case 5:
-			printf("\tBinarySearchTreePrintRecursivePreorder:\n");
-			BinarySearchTreePrintRecursivePreorder(root);
-			break;
-		case 6:
-			printf("\tBinarySearchTreePrintRecursivePostorder:\n");
-			BinarySearchTreePrintRecursivePostorder(root);
-			break;
-		case 7:
 			printf("Please enter a key: ");
 			if (scanf("%d", &key) <= 0) {
 				printf("\n\n\t| ERROR | Incorrect input |\n");
 				return FAILURE;
 			}
-			printf("BinarySearchTreeSearchRecursive. Adress: %p\n", BinarySearchTreeSearchRecursive(root, key));
+			if ((node = BSTCreateNode(key, &number)) != NULL) {
+				BSTInsertRecursive(&root, node);
+				printf("Node inserted!\n");
+			}
+			else {
+				printf("Insert failed!\n");
+			}
+			break;
+		case 3:
+			printf("\tBinarySearchTreePrintWithStack:\n");
+			BSTPrintWithStack(root, number);
+			break;
+		case 4:
+			printf("\tBinarySearchTreePrintWithPointer:\n");
+			BSTPrintWithPointer(root);
+			break;
+		case 5:
+			printf("\tBinarySearchTreePrintRecursiveInorder:\n");
+			BSTPrintRecursiveInorder(root);
+			break;
+		case 6:
+			printf("\tBinarySearchTreePrintRecursivePreorder:\n");
+			BSTPrintRecursivePreorder(root);
+			break;
+		case 7:
+			printf("\tBinarySearchTreePrintRecursivePostorder:\n");
+			BSTPrintRecursivePostorder(root);
 			break;
 		case 8:
 			printf("Please enter a key: ");
@@ -91,29 +107,27 @@ int main(void)
 				printf("\n\n\t| ERROR | Incorrect input |\n");
 				return FAILURE;
 			}
-			printf("BinarySearchTreeSearchIterative. Adress: %p\n", BinarySearchTreeSearchIterative(root, key));
+			printf("BSTSearchRecursive. Adress: %p\n", BSTSearchRecursive(root, key));
 			break;
 		case 9:
-			printf("BinarySearchTreeMinimumIterative. Key: %d\n", BinarySearchTreeMinimumIterative(root)->key);
-			break;
-		case 10:
-			printf("BinarySearchTreeMinimumRecursive. Key: %d\n", BinarySearchTreeMinimumRecursive(root)->key);
-			break;
-		case 11:
-			printf("BinarySearchTreeMaximumIterative. Key: %d\n", BinarySearchTreeMaximumIterative(root)->key);
-			break;
-		case 12:
-			printf("BinarySearchTreeMaximumRecursive. Key: %d\n", BinarySearchTreeMaximumRecursive(root)->key);
-			break;
-		case 13:
 			printf("Please enter a key: ");
 			if (scanf("%d", &key) <= 0) {
 				printf("\n\n\t| ERROR | Incorrect input |\n");
 				return FAILURE;
 			}
-			if ((node = BinarySearchTreeSearchIterative(root, key)) && (node = BinarySearchTreeSuccessor(node))) {
-				printf("BinarySearchTreeSuccessor. Key: %d\n", node->key);
-			}
+			printf("BSTSearchIterative. Adress: %p\n", BSTSearchIterative(root, key));
+			break;
+		case 10:
+			printf("BSTMinimumIterative. Key: %d\n", BSTMinimumIterative(root)->key);
+			break;
+		case 11:
+			printf("BSTMinimumRecursive. Key: %d\n", BSTMinimumRecursive(root)->key);
+			break;
+		case 12:
+			printf("BSTMaximumIterative. Key: %d\n", BSTMaximumIterative(root)->key);
+			break;
+		case 13:
+			printf("BSTMaximumRecursive. Key: %d\n", BSTMaximumRecursive(root)->key);
 			break;
 		case 14:
 			printf("Please enter a key: ");
@@ -121,8 +135,32 @@ int main(void)
 				printf("\n\n\t| ERROR | Incorrect input |\n");
 				return FAILURE;
 			}
-			if ((node = BinarySearchTreeSearchIterative(root, key)) && (node = BinarySearchTreePredecessor(node))) {
-				printf("BinarySearchTreePredecessor. Key: %d\n", node->key);
+			if ((node = BSTSearchIterative(root, key)) && (node = BSTSuccessor(node))) {
+				printf("BSTSuccessor. Key: %d\n", node->key);
+			}
+			break;
+		case 15:
+			printf("Please enter a key: ");
+			if (scanf("%d", &key) <= 0) {
+				printf("\n\n\t| ERROR | Incorrect input |\n");
+				return FAILURE;
+			}
+			if ((node = BSTSearchIterative(root, key)) && (node = BSTPredecessor(node))) {
+				printf("BSTPredecessor. Key: %d\n", node->key);
+			}
+			break;
+		case 16:
+			printf("Please enter a key: ");
+			if (scanf("%d", &key) <= 0) {
+				printf("\n\n\t| ERROR | Incorrect input |\n");
+				return FAILURE;
+			}
+			if ((node = BSTSearchIterative(root, key)) != NULL) {
+				BSTDelete(&root, node);
+				printf("Node deleted!\n");
+			}
+			else {
+				printf("Removal failed!\n");
 			}
 			break;
 		default:

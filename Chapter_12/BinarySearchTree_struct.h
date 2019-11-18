@@ -6,7 +6,7 @@ typedef struct BinarySearchTree {
 	struct BinarySearchTree* left;
 	struct BinarySearchTree* right;
 	int key;
-} BinarySearchTree_t;
+} BST_t;
 
 typedef struct BSTStackSet {
 	struct BinarySearchTree** stack;
