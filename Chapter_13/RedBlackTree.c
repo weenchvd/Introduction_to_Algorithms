@@ -2,7 +2,8 @@
 
 extern int minheight;
 extern int maxheight;
-extern int blackheight;
+extern int minblackheight;
+extern int maxblackheight;
 extern int numnode;
 
 RBT_t* RBTCreateNode(int key)
@@ -130,6 +131,128 @@ void RBTRightRotate(RBTPointers_t* tree, RBT_t* node)
 	return;
 }
 
+void RBTDelete(RBTPointers_t* tree, RBT_t* delnode)
+{
+	int ycolor;
+	RBT_t* y, * x;
+	y = delnode;
+	ycolor = y->color;
+	if (delnode->left == tree->nil) {
+		x = delnode->right;
+		RBTTransplant(tree, delnode, delnode->right);
+	}
+	else if (delnode->right == tree->nil) {
+		x = delnode->left;
+		RBTTransplant(tree, delnode, delnode->left);
+	}
+	else {
+		y = RBTMinimum(tree, delnode->right);
+		ycolor = y->color;
+		x = y->right;
+		if (y->parent == delnode) {
+			x->parent = y;
+		}
+		else {
+			RBTTransplant(tree, y, y->right);
+			y->right = delnode->right;
+			y->right->parent = y;
+		}
+		RBTTransplant(tree, delnode, y);
+		y->left = delnode->left;
+		y->left->parent = y;
+		y->color = delnode->color;
+	}
+	if (ycolor == BLACK) {
+		RBTDeleteFixup(tree, x);
+	}
+	free(delnode);
+	return;
+}
+
+void RBTTransplant(RBTPointers_t* tree, RBT_t* receiver, RBT_t* source)
+{
+	if (receiver->parent == tree->nil) {
+		tree->root = source;
+	}
+	else if (receiver == receiver->parent->left) {
+		receiver->parent->left = source;
+	}
+	else {
+		receiver->parent->right = source;
+	}
+	source->parent = receiver->parent;
+	return;
+}
+
+void RBTDeleteFixup(RBTPointers_t* tree, RBT_t* node)
+{
+	RBT_t* sibling;
+	while (node != tree->root && node->color == BLACK) {
+		if (node == node->parent->left) {
+			sibling = node->parent->right;
+			if (sibling->color == RED) {
+				sibling->color = BLACK;
+				node->parent->color = RED;
+				RBTLeftRotate(tree, node->parent);
+				sibling = node->parent->right;
+			}
+			if (sibling->left->color == BLACK && sibling->right->color == BLACK) {
+				sibling->color = RED;
+				node = node->parent;
+			}
+			else {
+				if (sibling->right->color == BLACK) {
+					sibling->left->color = BLACK;
+					sibling->color = RED;
+					RBTRightRotate(tree, sibling);
+					sibling = node->parent->right;
+				}
+				sibling->color = node->parent->color;
+				node->parent->color = BLACK;
+				sibling->right->color = BLACK;
+				RBTLeftRotate(tree, node->parent);
+				node = tree->root;
+			}
+		}
+		else {
+			sibling = node->parent->left;
+			if (sibling->color == RED) {
+				sibling->color = BLACK;
+				node->parent->color = RED;
+				RBTRightRotate(tree, node->parent);
+				sibling = node->parent->left;
+			}
+			if (sibling->right->color == BLACK && sibling->left->color == BLACK) {
+				sibling->color = RED;
+				node = node->parent;
+			}
+			else {
+				if (sibling->left->color == BLACK) {
+					sibling->right->color = BLACK;
+					sibling->color = RED;
+					RBTLeftRotate(tree, sibling);
+					sibling = node->parent->left;
+				}
+				sibling->color = node->parent->color;
+				node->parent->color = BLACK;
+				sibling->left->color = BLACK;
+				RBTRightRotate(tree, node->parent);
+				node = tree->root;
+			}
+		}
+	}
+	node->color = BLACK;
+	return;
+}
+
+RBT_t* RBTMinimum(RBTPointers_t* tree, RBT_t* root)
+{
+	while (root->left != tree->nil) {
+		root = root->left;
+	}
+	return root;
+}
+
 RBT_t* RBTSearch(RBTPointers_t* tree, int key)
 {
 	RBT_t* node;
@@ -149,7 +272,7 @@ void RBTPrintInorder(RBTPointers_t* tree, RBT_t* root, int hcounter, int bhcount
 		}
 		RBTPrintInorder(tree, root->left, hcounter, bhcounter);
 		numnode++;
-		printf("\t\tKey: %8d\n", root->key);
+		printf("\t\tKey: %8d [%s]\n", root->key, (root->color == BLACK) ? "BLACK" : "RED");
 		RBTPrintInorder(tree, root->right, hcounter, bhcounter);
 	}
 	else {
@@ -159,8 +282,11 @@ void RBTPrintInorder(RBTPointers_t* tree, RBT_t* root, int hcounter, int bhcount
 		if (hcounter < minheight) {
 			minheight = hcounter;
 		}
-		if (bhcounter > blackheight) {
-			blackheight = bhcounter;
+		if (bhcounter > maxblackheight) {
+			maxblackheight = bhcounter;
+		}
+		if (bhcounter < minblackheight) {
+			minblackheight = bhcounter;
 		}
 	}
 	return;
