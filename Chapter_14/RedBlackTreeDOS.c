@@ -29,14 +29,32 @@ void RBTInsert(RBTPointers_t* tree, RBT_t* newnode)
 	newnode->parent = prev;
 	if (prev == tree->nil) {
 		tree->root = newnode;
+		tree->min = tree->max = newnode;
 	}
 	else if (newnode->key < prev->key) {
 		prev->left = newnode;
+		if (newnode->key < tree->min->key) {
+			tree->min = newnode;
+		}
 	}
 	else {
 		prev->right = newnode;
+		if (newnode->key > tree->max->key) {
+			tree->max = newnode;
+		}
 	}
 	newnode->left = newnode->right = tree->nil;
+	newnode->pred = RBTPredecessor(tree, newnode);
+	if (newnode->pred != tree->nil) {
+		newnode->suc = newnode->pred->suc;
+		newnode->pred->suc = newnode;
+	}
+	else {
+		newnode->suc = RBTSuccessor(tree, newnode);
+	}
+	if (newnode->suc != tree->nil) {
+		newnode->suc->pred = newnode;
+	}
 	newnode->color = RED;
 	newnode->size = 1;
 	for (node = newnode->parent; node != tree->nil; node = node->parent) {
@@ -149,11 +167,20 @@ void RBTDelete(RBTPointers_t* tree, RBT_t* delnode)
 		x = delnode->right;
 		RBTTransplant(tree, delnode, delnode->right);
 		RBTOSDecreaseSize(tree, x);
+		if (delnode == tree->min) {
+			RBTADSMinimumFixup(tree, x);
+		}
+		if (delnode == tree->max) {
+			tree->max = x->parent;
+		}
 	}
 	else if (delnode->right == tree->nil) {
 		x = delnode->left;
 		RBTTransplant(tree, delnode, delnode->left);
 		RBTOSDecreaseSize(tree, x);
+		if (delnode == tree->max) {
+			RBTADSMaximumFixup(tree, x);
+		}
 	}
 	else {
 		y = RBTMinimum(tree, delnode->right);
@@ -178,6 +205,12 @@ void RBTDelete(RBTPointers_t* tree, RBT_t* delnode)
 		else if (x->parent != tree->root) {
 			RBTOSDecreaseSize(tree, x->parent);
 		}
+	}
+	if (delnode->pred != tree->nil) {
+		delnode->pred->suc = RBTSuccessor(tree, delnode->pred);
+	}
+	if (delnode->suc != tree->nil) {
+		delnode->suc->pred = RBTPredecessor(tree, delnode->suc);
 	}
 	if (ycolor == BLACK) {
 		RBTDeleteFixup(tree, x);
@@ -206,6 +239,26 @@ void RBTOSDecreaseSize(RBTPointers_t* tree, RBT_t* node)
 	for (node = node->parent; node != tree->nil; node = node->parent) {
 		node->size--;
 	}
+	return;
+}
+
+void RBTADSMinimumFixup(RBTPointers_t* tree, RBT_t* node)
+{
+	if (node == tree->nil) {
+		tree->min = node->parent;
+	}
+	else if (node->left == tree->nil) {
+		tree->min = node;
+	}
+	else {
+		tree->min = RBTMinimum(tree, node->left);
+	}
+	return;
+}
+
+void RBTADSMaximumFixup(RBTPointers_t* tree, RBT_t* node)
+{
+	tree->max = (node->right == tree->nil) ? node : RBTMaximum(tree, node->right);
 	return;
 }
 
@@ -278,6 +331,42 @@ RBT_t* RBTMinimum(RBTPointers_t* tree, RBT_t* root)
 	return root;
 }
 
+RBT_t* RBTMaximum(RBTPointers_t* tree, RBT_t* root)
+{
+	while (root->right != tree->nil) {
+		root = root->right;
+	}
+	return root;
+}
+
+RBT_t* RBTSuccessor(RBTPointers_t* tree, RBT_t* root)
+{
+	RBT_t* prev;
+	if (root->right != tree->nil) {
+		return RBTMinimum(tree, root->right);
+	}
+	prev = root->parent;
+	while (prev != tree->nil && root == prev->right) {
+		root = prev;
+		prev = prev->parent;
+	}
+	return prev;
+}
+
+RBT_t* RBTPredecessor(RBTPointers_t* tree, RBT_t* root)
+{
+	RBT_t* prev;
+	if (root->left != tree->nil) {
+		return RBTMaximum(tree, root->left);
+	}
+	prev = root->parent;
+	while (prev != tree->nil && root == prev->left) {
+		root = prev;
+		prev = prev->parent;
+	}
+	return prev;
+}
+
 RBT_t* RBTOSSelectRecursive(RBT_t* root, int rank)
 {
 	int noderank;
@@ -341,6 +430,34 @@ int RBTOSKeyRank(RBTPointers_t* tree, int key)
 	return rank;
 }
 
+void RBTADSEnumerate(RBTPointers_t* tree, int a, int b)
+{
+	RBT_t* node, * prev;
+	if (tree->root == tree->nil) {
+		printf("\t\tTree is empty!\n\n");
+		return;
+	}
+	if (a < tree->min->key) {
+		node = tree->min;
+	}
+	else {
+		prev = tree->nil;
+		node = tree->root;
+		while (node != tree->nil && a != node->key) {
+			prev = node;
+			node = (a < node->key) ? node->left : node->right;
+		}
+		if (node == tree->nil) {
+			node = (a < prev->key) ? prev : prev->suc;
+		}
+	}
+	while (node != tree->nil && node->key <= b) {
+		RBTPrintNode(tree, node);
+		node = node->suc;
+	}
+	return;
+}
+
 RBT_t* RBTSearch(RBTPointers_t* tree, int key)
 {
 	RBT_t* node;
@@ -360,8 +477,7 @@ void RBTPrintInorder(RBTPointers_t* tree, RBT_t* root, int hcounter, int bhcount
 		}
 		RBTPrintInorder(tree, root->left, hcounter, bhcounter);
 		numnode++;
-		printf("\t\tAddress: %p    Key: %8d    Color: %-5s    Size: %-5d\n",
-			root, root->key, (root->color == BLACK) ? "BLACK" : "RED", root->size);
+		RBTPrintNode(tree, root);
 		RBTPrintInorder(tree, root->right, hcounter, bhcounter);
 	}
 	else {
@@ -384,7 +500,7 @@ void RBTPrintInorder(RBTPointers_t* tree, RBT_t* root, int hcounter, int bhcount
 void RBTPrintPreorder(RBTPointers_t* tree, RBT_t* root)
 {
 	if (root != tree->nil) {
-		printf("\t\tKey: %8d\n", root->key);
+		RBTPrintNode(tree, root);
 		RBTPrintPreorder(tree, root->left);
 		RBTPrintPreorder(tree, root->right);
 	}
@@ -396,7 +512,27 @@ void RBTPrintPostorder(RBTPointers_t* tree, RBT_t* root)
 	if (root != tree->nil) {
 		RBTPrintPostorder(tree, root->left);
 		RBTPrintPostorder(tree, root->right);
-		printf("\t\tKey: %8d\n", root->key);
+		RBTPrintNode(tree, root);
+	}
+	return;
+}
+
+void RBTPrintNode(RBTPointers_t* tree, RBT_t* node)
+{
+	if (node->suc != tree->nil && node->pred != tree->nil) {
+		printf("Addr: %p   Key: %8d   Col: %-5s   Size: %-5d   SuccKey: %8d   PredKey: %8d\n",
+			node, node->key, (node->color == BLACK) ? "BLACK" : "RED", node->size,
+			node->suc->key, node->pred->key);
+	}
+	else if (node->suc != tree->nil) {
+		printf("Addr: %p   Key: %8d   Col: %-5s   Size: %-5d   SuccKey: %8d   PredKey: %-8s\n",
+			node, node->key, (node->color == BLACK) ? "BLACK" : "RED", node->size,
+			node->suc->key, "NIL");
+	}
+	else {
+		printf("Addr: %p   Key: %8d   Col: %-5s   Size: %-5d   SuccKey: %-8s   PredKey: %8d\n",
+			node, node->key, (node->color == BLACK) ? "BLACK" : "RED", node->size,
+			"NIL", node->pred->key);
 	}
 	return;
 }

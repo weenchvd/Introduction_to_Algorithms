@@ -2,6 +2,8 @@
 /* Exercise 14.1-3 | Dynamic-Order-Statistics */
 /* Exercise 14.1-4 | Dynamic-Order-Statistics */
 /* Exercise 14.1-6 | Dynamic-Order-Statistics */
+/* Exercise 14.2-1 | Augmenting-Data-Structure */
+/* Exercise 14.2-4 | Augmenting-Data-Structure */
 
 #include "RedBlackTreeDOS_common.h"
 #include "RedBlackTreeDOS_struct.h"
@@ -19,6 +21,7 @@ RBT_t* RBTOSSelectRecursive(RBT_t* root, int rank);
 RBT_t* RBTOSSelectIterative(RBT_t* root, int rank);
 int RBTOSRank(RBTPointers_t* tree, RBT_t* node);
 int RBTOSKeyRank(RBTPointers_t* tree, int key);
+void RBTADSEnumerate(RBTPointers_t* tree, int a, int b);
 RBT_t* RBTSearch(RBTPointers_t* tree, int key);
 void RBTPrintInorder(RBTPointers_t* tree, RBT_t* root, int hcounter, int bhcounter);
 void RBTPrintPreorder(RBTPointers_t* tree, RBT_t* root);
@@ -35,16 +38,16 @@ int main(void)
 	int i, j, r1, r2, way, action, key, rank;
 	char* list = "\tList of action:\n 0 (List of action), "
 		"1 (RBTInsert), 2 (RBTDelete), 3 (RBTSearch), "
-		"4 (RBTOSSelectRecursive), 5 (RBTOSSelectIterative), 6 (RBTOSRank), 7 (RBTOSKeyRank), "
-		"8 (RBTPrintInorder), 9 (RBTPrintPreorder), 10 (RBTPrintPostorder), "
-		"11 (RBTRandomInsert), 12 (RBTRandomDelete)\n\n";
+		"4 (RBTOSSelectRecursive), 5 (RBTOSSelectIterative), 6 (RBTOSRank), 7 (RBTOSKeyRank), 8 (RBTADSEnumerate), "
+		"9 (RBTPrintInorder), 10 (RBTPrintPreorder), 11 (RBTPrintPostorder), "
+		"12 (RBTRandomInsert), 13 (RBTRandomDelete)\n\n";
 	RBT_t* node;
 	RBTPointers_t tree;
 	RBT_t nil;
 	nil.key = nil.size = 0;
 	nil.color = BLACK;
-	nil.parent = nil.left = nil.right = NULL;
-	tree.nil = tree.root = &nil;
+	nil.parent = nil.left = nil.right = nil.suc = nil.pred = NULL;
+	tree.nil = tree.root = tree.min = tree.max = &nil;
 	printf(list);
 	while (TRUE) {
 		printf("Please enter an action: ");
@@ -152,22 +155,35 @@ int main(void)
 			}
 			break;
 		case 8:
-			maxheight = maxblackheight = numnode = 0;
-			minheight = minblackheight = INT_MAX;
-			printf("\tRBTPrintInorder:\n");
-			RBTPrintInorder(&tree, tree.root, 0, 0);
-			printf("\tHeight: min %d, max %d. Black height: min %d, max %d. Number of nodes: %d.\n",
-				minheight, maxheight, minblackheight, maxblackheight, numnode);
+			printf("Please enter a range of keys \"A, B\": ");
+			if (scanf("%d, %d", &r1, &r2) <= 0) {
+				printf("\n\n\t| ERROR | Unacceptable \"A, B\" range |\n");
+				break;
+			}
+			if (r1 < r2) {
+				printf("\tRBTADSEnumerate(keys from %d to %d):\n", r1, r2);
+				RBTADSEnumerate(&tree, r1, r2);
+			}
 			break;
 		case 9:
+			maxheight = maxblackheight = numnode = 0;
+			minheight = minblackheight = INT_MAX;
+			printf("\tRBTPrintInorder:\n\n");
+			RBTPrintInorder(&tree, tree.root, 0, 0);
+			printf("\tHeight: min %d, max %d. Black height: min %d, max %d. Number of nodes: %d.\n"
+				"\tMinimum: %d. Maximum: %d.\n\n",
+				minheight, maxheight, minblackheight, maxblackheight, numnode,
+				tree.min->key, tree.max->key);
+			break;
+		case 10:
 			printf("\tRBTPrintPreorder:\n");
 			RBTPrintPreorder(&tree, tree.root);
 			break;
-		case 10:
+		case 11:
 			printf("\tRBTPrintPostorder:\n");
 			RBTPrintPostorder(&tree, tree.root);
 			break;
-		case 11:
+		case 12:
 			j = 0;
 			printf("Please enter the number of random keys to insert: ");
 			if (scanf("%d", &j) <= 0) {
@@ -181,7 +197,7 @@ int main(void)
 			}
 			printf("Nodes inserted!\n");
 			break;
-		case 12:
+		case 13:
 			j = 0;
 			printf("Please enter the number of random keys to delete: ");
 			if (scanf("%d", &j) <= 0) {
