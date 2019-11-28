@@ -10,10 +10,15 @@ set (CMAKE_INSTALL_PREFIX ${PROJECT_SOURCE_DIR}/..)
 
 set (FILE_NAME RedBlackTreeDOS_main)
 set (SOURCE_C_LIST ${FILE_NAME}.c RedBlackTreeDOS.c)
+set (FILE_NAME_2 RedBlackTreeInterval_main)
+set (SOURCE_C_LIST_2 ${FILE_NAME_2}.c RedBlackTreeInterval.c)
 
 # Add source to this project's executable.
 add_executable (${FILE_NAME} ${SOURCE_C_LIST})
+add_executable (${FILE_NAME_2} ${SOURCE_C_LIST_2})
 
 # TODO: Add tests and install targets if needed.
 install (TARGETS ${FILE_NAME} CONFIGURATIONS Debug DESTINATION Build/Debug)
 install (TARGETS ${FILE_NAME} CONFIGURATIONS Release DESTINATION Build)
+install (TARGETS ${FILE_NAME_2} CONFIGURATIONS Debug DESTINATION Build/Debug)
+install (TARGETS ${FILE_NAME_2} CONFIGURATIONS Release DESTINATION Build)
