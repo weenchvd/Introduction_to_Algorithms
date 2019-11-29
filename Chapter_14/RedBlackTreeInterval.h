@@ -21,6 +21,8 @@ RBT_t* RBTMaximum(RBTPointers_t* tree, RBT_t* root);
 RBT_t* RBTSuccessor(RBTPointers_t* tree, RBT_t* root);
 RBT_t* RBTPredecessor(RBTPointers_t* tree, RBT_t* root);
 RBT_t* RBTISearch(RBTPointers_t* tree, Interval_t i);
+RBT_t* RBTISearchWithMinLowEndpoint(RBTPointers_t* tree, Interval_t i);
+RBT_t* RBTISearchOI(RBTPointers_t* tree, Interval_t oi);
 void RBTPrintInorder(RBTPointers_t* tree, RBT_t* root, int hcounter, int bhcounter);
 void RBTPrintNode(RBTPointers_t* tree, RBT_t* node);
 

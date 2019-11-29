@@ -322,8 +322,33 @@ RBT_t* RBTISearch(RBTPointers_t* tree, Interval_t i)
 {
 	RBT_t* node;
 	node = tree->root;
-	while (node != tree->nil && (i.low > node->invl.high || node->invl.low > i.high)) {		/* !(i.low <= node->invl.high && node->invl.low <= i.high) */
+	while (node != tree->nil && (i.low > node->invl.high || node->invl.low > i.high)) {		/* node != tree->nil && !(i.low <= node->invl.high && node->invl.low <= i.high) */
 		node = (node->left != tree->nil && node->left->max >= i.low) ? node->left : node->right;
+	}
+	return node;
+}
+
+RBT_t* RBTISearchWithMinLowEndpoint(RBTPointers_t* tree, Interval_t i)
+{
+	RBT_t* node;
+	node = tree->root;
+	while (node != tree->nil && (i.low > node->invl.high || node->invl.low > i.high)) {		/* node != tree->nil && !(i.low <= node->invl.high && node->invl.low <= i.high) */
+		node = (node->left != tree->nil && node->left->max >= i.low) ? node->left : node->right;
+	}
+	if (node != tree->nil) {
+		while (node->left != tree->nil && node->left->invl.high >= i.low) {
+			node = node->left;
+		}
+	}
+	return node;
+}
+
+RBT_t* RBTISearchOI(RBTPointers_t* tree, Interval_t oi)
+{
+	RBT_t* node;
+	node = tree->root;
+	while (node != tree->nil && (oi.low >= node->invl.high || node->invl.low >= oi.high)) {		/* node != tree->nil && !(oi.low < node->invl.high && node->invl.low < oi.high) */
+		node = (node->left != tree->nil && node->left->max > oi.low) ? node->left : node->right;
 	}
 	return node;
 }

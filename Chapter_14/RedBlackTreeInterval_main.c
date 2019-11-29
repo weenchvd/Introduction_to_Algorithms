@@ -1,5 +1,7 @@
 /* Chapter 14.3 | Interval-Tree */
 /* Exercise 14.3-1 | Interval-Tree */
+/* Exercise 14.3-2 | Interval-Tree */
+/* Exercise 14.3-3 | Interval-Tree */
 
 #include "RedBlackTreeInterval_common.h"
 #include "RedBlackTreeInterval_struct.h"
@@ -14,6 +16,8 @@ RBT_t* RBTCreateNode(Interval_t i);
 void RBTInsert(RBTPointers_t* tree, RBT_t* newnode);
 void RBTDelete(RBTPointers_t* tree, RBT_t* delnode);
 RBT_t* RBTISearch(RBTPointers_t* tree, Interval_t i);
+RBT_t* RBTISearchWithMinLowEndpoint(RBTPointers_t* tree, Interval_t i);
+RBT_t* RBTISearchOI(RBTPointers_t* tree, Interval_t oi);
 void RBTPrintInorder(RBTPointers_t* tree, RBT_t* root, int hcounter, int bhcounter);
 void RBTPrintNode(RBTPointers_t* tree, RBT_t* node);
 
@@ -27,8 +31,8 @@ int main(void)
 {
 	int i, j, r1, r2, way, action;
 	char* list = "\tList of action:\n 0 (List of action), "
-		"1 (RBTInsert), 2 (RBTDelete), 3 (RBTSearch), "
-		"4 (RBTPrintInorder), 5 (RBTRandomInsert), 6 (RBTRandomDelete)\n\n";
+		"1 (RBTInsert), 2 (RBTDelete), 3 (RBTSearch), 4 (RBTISearchWithMinLowEndpoint), 5 (RBTISearchOI), "
+		"6 (RBTPrintInorder), 7 (RBTRandomInsert), 8 (RBTRandomDelete)\n\n";
 	RBT_t* node;
 	RBTPointers_t tree;
 	RBT_t nil;
@@ -49,7 +53,7 @@ int main(void)
 			printf(list);
 			break;
 		case 1:
-			printf("Please enter a range of keys \"A, B\": ");
+			printf("Please enter a closed interval \"A, B\": ");
 			if (scanf("%d, %d", &invl.low, &invl.high) <= 0) {
 				printf("\n\n\t| ERROR | Unacceptable \"A, B\" range |\n");
 				break;
@@ -63,7 +67,7 @@ int main(void)
 			}
 			break;
 		case 2:
-			printf("Please enter a range of keys \"A, B\": ");
+			printf("Please enter a closed interval \"A, B\": ");
 			if (scanf("%d, %d", &invl.low, &invl.high) <= 0) {
 				printf("\n\n\t| ERROR | Unacceptable \"A, B\" range |\n");
 				break;
@@ -77,19 +81,48 @@ int main(void)
 			}
 			break;
 		case 3:
-			printf("Please enter a range of keys \"A, B\": ");
+			printf("Please enter a closed interval \"A, B\": ");
 			if (scanf("%d, %d", &invl.low, &invl.high) <= 0) {
 				printf("\n\n\t| ERROR | Unacceptable \"A, B\" range |\n");
 				break;
 			}
 			if (invl.low <= invl.high && (node = RBTISearch(&tree, invl)) != tree.nil) {
-				printf("RBTSearch. Adress: %p\n", node);
+				printf("RBTSearch:\n");
+				RBTPrintNode(&tree, node);
 			}
 			else {
 				printf("Interval is not in the tree!\n");
 			}
 			break;
 		case 4:
+			printf("Please enter a closed interval \"A, B\": ");
+			if (scanf("%d, %d", &invl.low, &invl.high) <= 0) {
+				printf("\n\n\t| ERROR | Unacceptable \"A, B\" range |\n");
+				break;
+			}
+			if (invl.low <= invl.high && (node = RBTISearchWithMinLowEndpoint(&tree, invl)) != tree.nil) {
+				printf("RBTISearchWithMinLowEndpoint:\n");
+				RBTPrintNode(&tree, node);
+			}
+			else {
+				printf("Interval is not in the tree!\n");
+			}
+			break;
+		case 5:
+			printf("Please enter an open interval \"A, B\": ");
+			if (scanf("%d, %d", &invl.low, &invl.high) <= 0) {
+				printf("\n\n\t| ERROR | Unacceptable \"A, B\" range |\n");
+				break;
+			}
+			if (invl.low < invl.high && (node = RBTISearchOI(&tree, invl)) != tree.nil) {
+				printf("RBTISearchOI:\n");
+				RBTPrintNode(&tree, node);
+			}
+			else {
+				printf("Interval is not in the tree!\n");
+			}
+			break;
+		case 6:
 			maxheight = maxblackheight = numnode = 0;
 			minheight = minblackheight = INT_MAX;
 			printf("\tRBTPrintInorder:\n");
@@ -105,7 +138,7 @@ int main(void)
 				printf("\tRoot: NIL\n\n");
 			}
 			break;
-		case 5:
+		case 7:
 			j = 0;
 			printf("Please enter the number of random keys to insert: ");
 			if (scanf("%d", &j) <= 0) {
@@ -121,7 +154,7 @@ int main(void)
 			}
 			printf("Nodes inserted!\n");
 			break;
-		case 6:
+		case 8:
 			j = 0;
 			printf("Please enter the number of random keys to delete: ");
 			if (scanf("%d", &j) <= 0) {
