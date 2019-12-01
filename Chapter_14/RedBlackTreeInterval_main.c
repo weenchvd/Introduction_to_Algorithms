@@ -2,6 +2,7 @@
 /* Exercise 14.3-1 | Interval-Tree */
 /* Exercise 14.3-2 | Interval-Tree */
 /* Exercise 14.3-3 | Interval-Tree */
+/* Exercise 14.3-5 | Interval-Tree */
 
 #include "RedBlackTreeInterval_common.h"
 #include "RedBlackTreeInterval_struct.h"
@@ -18,6 +19,7 @@ void RBTDelete(RBTPointers_t* tree, RBT_t* delnode);
 RBT_t* RBTISearch(RBTPointers_t* tree, Interval_t i);
 RBT_t* RBTISearchWithMinLowEndpoint(RBTPointers_t* tree, Interval_t i);
 RBT_t* RBTISearchOI(RBTPointers_t* tree, Interval_t oi);
+RBT_t* RBTISearchExactly(RBTPointers_t* tree, Interval_t i);
 void RBTPrintInorder(RBTPointers_t* tree, RBT_t* root, int hcounter, int bhcounter);
 void RBTPrintNode(RBTPointers_t* tree, RBT_t* node);
 
@@ -31,8 +33,8 @@ int main(void)
 {
 	int i, j, r1, r2, way, action;
 	char* list = "\tList of action:\n 0 (List of action), "
-		"1 (RBTInsert), 2 (RBTDelete), 3 (RBTSearch), 4 (RBTISearchWithMinLowEndpoint), 5 (RBTISearchOI), "
-		"6 (RBTPrintInorder), 7 (RBTRandomInsert), 8 (RBTRandomDelete)\n\n";
+		"1 (RBTInsert), 2 (RBTDelete), 3 (RBTSearch), 4 (RBTISearchWithMinLowEndpoint), 5 (RBTISearchOI), 6 (RBTISearchExactly), "
+		"7 (RBTPrintInorder), 8 (RBTRandomInsert), 9 (RBTRandomDelete)\n\n";
 	RBT_t* node;
 	RBTPointers_t tree;
 	RBT_t nil;
@@ -123,6 +125,20 @@ int main(void)
 			}
 			break;
 		case 6:
+			printf("Please enter a closed interval \"A, B\": ");
+			if (scanf("%d, %d", &invl.low, &invl.high) <= 0) {
+				printf("\n\n\t| ERROR | Unacceptable \"A, B\" range |\n");
+				break;
+			}
+			if (invl.low <= invl.high && (node = RBTISearchExactly(&tree, invl)) != tree.nil) {
+				printf("RBTISearchExactly:\n");
+				RBTPrintNode(&tree, node);
+			}
+			else {
+				printf("Interval is not in the tree!\n");
+			}
+			break;
+		case 7:
 			maxheight = maxblackheight = numnode = 0;
 			minheight = minblackheight = INT_MAX;
 			printf("\tRBTPrintInorder:\n");
@@ -138,7 +154,7 @@ int main(void)
 				printf("\tRoot: NIL\n\n");
 			}
 			break;
-		case 7:
+		case 8:
 			j = 0;
 			printf("Please enter the number of random keys to insert: ");
 			if (scanf("%d", &j) <= 0) {
@@ -154,7 +170,7 @@ int main(void)
 			}
 			printf("Nodes inserted!\n");
 			break;
-		case 8:
+		case 9:
 			j = 0;
 			printf("Please enter the number of random keys to delete: ");
 			if (scanf("%d", &j) <= 0) {

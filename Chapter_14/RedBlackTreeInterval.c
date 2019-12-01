@@ -353,6 +353,19 @@ RBT_t* RBTISearchOI(RBTPointers_t* tree, Interval_t oi)
 	return node;
 }
 
+RBT_t* RBTISearchExactly(RBTPointers_t* tree, Interval_t i)
+{
+	RBT_t* node;
+	node = tree->root;
+	while (node != tree->nil && i.low != node->invl.low && i.high <= node->max) {
+		node = (i.low < node->invl.low) ? node->left : node->right;
+	}
+	if (node != tree->nil && (i.low != node->invl.low || i.high != node->invl.high)) {
+		node = tree->nil;
+	}
+	return node;
+}
+
 void RBTPrintInorder(RBTPointers_t* tree, RBT_t* root, int hcounter, int bhcounter)
 {
 	if (root != tree->nil) {
