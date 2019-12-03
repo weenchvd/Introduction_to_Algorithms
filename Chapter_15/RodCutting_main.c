@@ -1,4 +1,5 @@
 /* Chapter 15.1 | Rod-Cutting */
+/* Exercise 15.1-3 | Rod-Cutting */
 
 #include "RodCutting_common.h"
 #include "RodCutting_struct.h"
@@ -8,13 +9,14 @@
 int MemoizedCutRod(int* price, int n);
 int BottomUpCutRod(int* price, int n);
 void PrintCutRodSolution(int* price, int n);
+void PrintCutRodSolutionNonFreeCut(int* price, int n, int cutcost);
 
 int main(void)
 {
-	int i, j, n, action;
+	int i, j, n, tmp, action;
 	int* price;
 	char* list = "\tList of action:\n 0 (List of action), "
-		"1 (MemoizedCutRod), 2 (BottomUpCutRod), 3 (PrintCutRodSolution)\n\n";
+		"1 (MemoizedCutRod), 2 (BottomUpCutRod), 3 (PrintCutRodSolution), 4 (PrintCutRodSolutionNonFreeCut)\n\n";
 	n = 0;
 	printf("Please enter the length of a rod: ");
 	if (scanf("%d", &n) <= 0) {
@@ -56,6 +58,20 @@ int main(void)
 		case 3:
 			printf("\tPrintCutRodSolution:\n");
 			PrintCutRodSolution(price, n);
+			break;
+		case 4:
+			tmp = 0;
+			printf("Please enter the cost of making a cut of a rod: ");
+			if (scanf("%d", &tmp) <= 0) {
+				printf("\n\n\t| ERROR | Incorrect input |\n");
+				return FAILURE;
+			}
+			if (tmp < 0) {
+				printf("\n\n\t| ERROR | Incorrect input. Cost must be equal to or greater than 0 |\n");
+				break;
+			}
+			printf("\tPrintCutRodSolutionNonFreeCut:\n");
+			PrintCutRodSolutionNonFreeCut(price, n, tmp);
 			break;
 		default:
 			printf("\n\n\t| ERROR | Incorrect input |\n");

@@ -66,18 +66,17 @@ void PrintCutRodSolution(int* price, int n)
 	}
 	ExtendedBottomUpCutRod(price, rev, cutsize, n);
 	cond = n;
-	printf("Sizes:");
+	printf("Total revenue: %d. Sizes:", rev[n]);
 	while (n > 0) {
 		printf(" %d,", cutsize[n]);
 		n = n - cutsize[n];
 	}
 	if (cond) {
-		printf("\b ");
+		printf("\b \n");
 	}
 	else {
-		printf(" -");
+		printf(" -\n");
 	}
-	putchar('\n');
 	free(rev);
 	free(cutsize);
 	return;
@@ -91,6 +90,50 @@ void ExtendedBottomUpCutRod(int* price, int* rev, int* cutsize, int n)
 		maxrev = INT_MIN;
 		for (i = 1; i <= j; i++) {
 			if (maxrev < (tmp = price[i] + rev[j - i])) {
+				maxrev = tmp;
+				cutsize[j] = i;
+			}
+		}
+		rev[j] = maxrev;
+	}
+	return;
+}
+
+void PrintCutRodSolutionNonFreeCut(int* price, int n, int cutcost)
+{
+	int cond;
+	int* rev, * cutsize;
+	if ((rev = malloc(sizeof(int) * (n + 1))) == NULL || (cutsize = malloc(sizeof(int) * (n + 1))) == NULL) {
+		printf("\n\n\t| ERROR | Memory allocator error. No memory allocated |\n");
+		return FAILURE;
+	}
+	ExtendedBottomUpCutRodNonFreeCut(price, rev, cutsize, n, cutcost);
+	cond = n;
+	printf("Cost of making a cut: %d. Total revenue: %d. Sizes:", cutcost, rev[n]);
+	while (n > 0) {
+		printf(" %d,", cutsize[n]);
+		n = n - cutsize[n];
+	}
+	if (cond) {
+		printf("\b \n");
+	}
+	else {
+		printf(" -\n");
+	}
+	free(rev);
+	free(cutsize);
+	return;
+}
+
+void ExtendedBottomUpCutRodNonFreeCut(int* price, int* rev, int* cutsize, int n, int cutcost)
+{
+	int i, j, maxrev, tmp;
+	rev[0] = 0;
+	for (j = 1; j <= n; j++) {
+		maxrev = INT_MIN;
+		for (i = 1; i <= j; i++) {
+			tmp = (j - i) ? rev[j - i] - cutcost : 0;
+			if (maxrev < (tmp = price[i] + tmp)) {
 				maxrev = tmp;
 				cutsize[j] = i;
 			}

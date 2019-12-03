@@ -11,5 +11,7 @@ int MemoizedCutRodAux(int* price, int* rev, int n);
 int BottomUpCutRod(int* price, int n);
 void PrintCutRodSolution(int* price, int n);
 void ExtendedBottomUpCutRod(int* price, int* rev, int* cutsize, int n);
+void PrintCutRodSolutionNonFreeCut(int* price, int n, int cutcost);
+void ExtendedBottomUpCutRodNonFreeCut(int* price, int* rev, int* cutsize, int n, int cutcost);
 
 #endif
