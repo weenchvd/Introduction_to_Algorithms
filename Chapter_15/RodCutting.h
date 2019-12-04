@@ -13,5 +13,9 @@ void PrintCutRodSolution(int* price, int n);
 void ExtendedBottomUpCutRod(int* price, int* rev, int* cutsize, int n);
 void PrintCutRodSolutionNonFreeCut(int* price, int n, int cutcost);
 void ExtendedBottomUpCutRodNonFreeCut(int* price, int* rev, int* cutsize, int n, int cutcost);
+void PrintExtendedMemoizedCutRodSolution(int* price, int n);
+int ExtendedMemoizedCutRodAux(int* price, int* rev, int* cutsize, int n);
+void PrintFibonacciNumber(int n);
+void FibonacciNumber(int* fn, int n);
 
 #endif

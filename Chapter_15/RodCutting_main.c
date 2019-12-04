@@ -1,5 +1,7 @@
 /* Chapter 15.1 | Rod-Cutting */
 /* Exercise 15.1-3 | Rod-Cutting */
+/* Exercise 15.1-4 | Rod-Cutting */
+/* Exercise 15.1-5 | Rod-Cutting */
 
 #include "RodCutting_common.h"
 #include "RodCutting_struct.h"
@@ -10,13 +12,16 @@ int MemoizedCutRod(int* price, int n);
 int BottomUpCutRod(int* price, int n);
 void PrintCutRodSolution(int* price, int n);
 void PrintCutRodSolutionNonFreeCut(int* price, int n, int cutcost);
+void PrintExtendedMemoizedCutRodSolution(int* price, int n);
+void PrintFibonacciNumber(int n);
 
 int main(void)
 {
 	int i, j, n, tmp, action;
 	int* price;
 	char* list = "\tList of action:\n 0 (List of action), "
-		"1 (MemoizedCutRod), 2 (BottomUpCutRod), 3 (PrintCutRodSolution), 4 (PrintCutRodSolutionNonFreeCut)\n\n";
+		"1 (MemoizedCutRod), 2 (BottomUpCutRod), 3 (PrintCutRodSolution), 4 (PrintCutRodSolutionNonFreeCut), "
+		"5 (PrintExtendedMemoizedCutRodSolution), 6 (PrintFibonacciNumber)\n\n";
 	n = 0;
 	printf("Please enter the length of a rod: ");
 	if (scanf("%d", &n) <= 0) {
@@ -72,6 +77,24 @@ int main(void)
 			}
 			printf("\tPrintCutRodSolutionNonFreeCut:\n");
 			PrintCutRodSolutionNonFreeCut(price, n, tmp);
+			break;
+		case 5:
+			printf("\tPrintExtendedMemoizedCutRodSolution:\n");
+			PrintExtendedMemoizedCutRodSolution(price, n);
+			break;
+		case 6:
+			tmp = 0;
+			printf("Please enter the number of Fibonacci numbers: ");
+			if (scanf("%d", &tmp) <= 0) {
+				printf("\n\n\t| ERROR | Incorrect input |\n");
+				return FAILURE;
+			}
+			if (tmp < 1 || tmp > 47) {
+				printf("\n\n\t| ERROR | Incorrect input. Number of Fibonacci numbers must be from 1 to 47 |\n");
+				break;
+			}
+			printf("\tPrintFibonacciNumber:\n");
+			PrintFibonacciNumber(tmp);
 			break;
 		default:
 			printf("\n\n\t| ERROR | Incorrect input |\n");
