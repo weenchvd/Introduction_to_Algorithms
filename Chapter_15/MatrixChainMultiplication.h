@@ -17,5 +17,8 @@ Matrix_t* MatrixMultiply(Matrix_t* ma, Matrix_t* mb);
 Matrix_t* CreateMatrix(int row, int col);
 void PrintMatrix(Matrix_t* m);
 Matrix_t* MatrixSequenceMultiplyGeneral(MSequence_t* seq);
+Matrix_t* MatrixSequenceMultiplyRecursive(MSequence_t* seq);
+void MemoizedMatrixChain(MSequence_t* seq, int** mstable);
+int LookupChain(int* mstable, int* dim, int i, int j, int n);
 
 #endif

@@ -171,3 +171,64 @@ Matrix_t* MatrixSequenceMultiplyGeneral(MSequence_t* seq)
 	}
 	return ma;
 }
+
+Matrix_t* MatrixSequenceMultiplyRecursive(MSequence_t* seq)
+{
+	int* mstable; // mstable - M-table + S-table
+	Matrix_t* result;
+	MemoizedMatrixChain(seq, &mstable);
+	result = MatrixChainMultiply(seq, mstable, 1, seq->p);
+	free(mstable);
+	return result;
+}
+
+void MemoizedMatrixChain(MSequence_t* seq, int** mstable)
+{
+	int i, j, n;
+	int* mt, * st, * dim; // mt - M-table; st - S-table
+	n = seq->p;
+	if ((dim = malloc(sizeof(int) * (n + 1))) == NULL) {
+		printf("\n\n\t| ERROR | Memory allocator error. No memory allocated |\n");
+		return;
+	}
+	if (seq->p > 0) {
+		dim[0] = seq->m[0]->row;
+	}
+	for (i = 0; i < seq->p; i++) {
+		dim[i + 1] = seq->m[i]->col;
+	}
+	if ((mt = st = malloc(sizeof(int) * n * n)) == NULL) {
+		printf("\n\n\t| ERROR | Memory allocator error. No memory allocated |\n");
+		return;
+	}
+	for (i = 1; i <= n; i++) {
+		for (j = i; j <= n; j++) {
+			mt[mtitem(i, j, n)] = INT_MAX;
+		}
+	}
+	*mstable = mt;
+	LookupChain(*mstable, dim, 1, seq->p, n);
+	free(dim);
+	return;
+}
+
+int LookupChain(int* mstable, int* dim, int i, int j, int n)
+{
+	int k, min;
+	if (mstable[mtitem(i, j, n)] < INT_MAX) {
+		return mstable[mtitem(i, j, n)];
+	}
+	if (i == j) {
+		mstable[mtitem(i, j, n)] = 0;
+	}
+	else {
+		for (k = i; k <= j - 1; k++) {
+			min = LookupChain(mstable, dim, i, k, n) + LookupChain(mstable, dim, k + 1, j, n) + dim[i - 1] * dim[k] * dim[j];
+			if (min < mstable[mtitem(i, j, n)]) {
+				mstable[mtitem(i, j, n)] = min;
+				mstable[stitem(i, j, n)] = k;
+			}
+		}
+	}
+	return mstable[mtitem(i, j, n)];
+}

@@ -1,5 +1,6 @@
 /* Chapter 15.2 | Matrix-Chain-Multiplication */
 /* Exercise 15.2-2 | Matrix-Chain-Multiplication */
+/* Chapter 15.3 | Matrix-Chain-Multiplication-Recursive */
 
 #include "MatrixChainMultiplication_common.h"
 #include "MatrixChainMultiplication_struct.h"
@@ -14,6 +15,7 @@ Matrix_t* MatrixSequenceMultiply(MSequence_t* seq);
 Matrix_t* CreateMatrix(int row, int col);
 void PrintMatrix(Matrix_t* m);
 Matrix_t* MatrixSequenceMultiplyGeneral(MSequence_t* seq);
+Matrix_t* MatrixSequenceMultiplyRecursive(MSequence_t* seq);
 
 #if PRINTMATRIXNAME
 extern int name;
@@ -27,7 +29,8 @@ int main(void)
 	MSequence_t seq, allmatrices;
 	Matrix_t* matrix, * matrix2;
 	char* list = "\tList of action:\n-1 (EXIT), 0 (List of action), "
-		"1 (MatrixSequenceMultiply), 2 (MatrixSequenceMultiplyGeneral), 3 (PrintAllMatrices), 4 (CompareMatrices)\n\n";
+		"1 (MatrixSequenceMultiply), 2 (MatrixSequenceMultiplyGeneral), 3 (MatrixSequenceMultiplyRecursive), "
+		"4 (PrintAllMatrices), 5 (CompareMatrices)\n\n";
 	printf(list);
 	allm = &allmatrices;
 	matrix = matrix2 = NULL;
@@ -92,12 +95,16 @@ int main(void)
 			PrintMatrix(matrix2);
 			break;
 		case 3:
+			matrix = MatrixSequenceMultiplyRecursive(&seq);
+			PrintMatrix(matrix);
+			break;
+		case 4:
 			printf("PrintAllMatrices:\n\n");
 			for (i = 0; i < seq.p; i++) {
 				PrintMatrix(seq.m[i]);
 			}
 			break;
-		case 4:
+		case 5:
 			if (matrix != NULL && matrix2 != NULL && (j = matrix->row * matrix->col) == matrix2->row * matrix2->col) {
 				tmp = 0;
 				for (i = 0; i < j; i++) {
@@ -106,10 +113,10 @@ int main(void)
 					}
 				}
 				if (tmp > 0) {
-					printf("\tMatrices is not equal (%d mismathces)\n", tmp);
+					printf("\tMatrices %s and %s is not equal (%d mismathces)\n", matrix->name, matrix2->name, tmp);
 				}
 				else {
-					printf("\tMatrices is equal\n");
+					printf("\tMatrices %s and %s is equal\n", matrix->name, matrix2->name);
 				}
 			}
 			break;
