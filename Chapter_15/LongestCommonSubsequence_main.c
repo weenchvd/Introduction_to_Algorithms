@@ -1,4 +1,7 @@
 /* Chapter 15.4 | Longest-Common-Subsequence */
+/* Exercise 15.4-2 | Longest-Common-Subsequence */
+/* Exercise 15.4-3 | Longest-Common-Subsequence */
+/* Exercise 15.4-4 | Longest-Common-Subsequence */
 
 #include "LongestCommonSubsequence_common.h"
 #include "LongestCommonSubsequence_struct.h"
@@ -11,6 +14,9 @@
 
 void LCSFindAndPrint(Sequence_t* x, Sequence_t* y);
 void PrintStrings(Sequence_t* x, Sequence_t* y);
+void LCSFindAndPrintWithoutBtable(Sequence_t* x, Sequence_t* y);
+void LCSFindAndPrintWithoutBtableRecursive(Sequence_t* x, Sequence_t* y);
+void LCSFindAndPrintLength(Sequence_t* x, Sequence_t* y);
 
 int main(void)
 {
@@ -18,7 +24,8 @@ int main(void)
 	Sequence_t seq1, seq2;
 	SSet_t set;
 	char* list = "\tList of action: -1 (EXIT), 0 (List of action),\n"
-		"1 (CreateStrings), 2 (CreateRandomStrings), 3 (PrintStrings), 4 (LCSFindAndPrint)\n\n";
+		"1 (CreateStrings), 2 (CreateRandomStrings), 3 (PrintStrings), 4 (LCSFindAndPrint), 5 (LCSFindAndPrintWithoutBtable),\n"
+		"6 (LCSFindAndPrintWithoutBtableRecursive), 7 (LCSFindAndPrintLength)\n\n";
 	printf(list);
 	seq1.s = seq2.s = NULL;
 	set.sp = 0;
@@ -118,6 +125,21 @@ int main(void)
 		case 4:
 			if (seq1.s != NULL && seq2.s != NULL) {
 				LCSFindAndPrint(&seq1, &seq2);
+			}
+			break;
+		case 5:
+			if (seq1.s != NULL && seq2.s != NULL) {
+				LCSFindAndPrintWithoutBtable(&seq1, &seq2);
+			}
+			break;
+		case 6:
+			if (seq1.s != NULL && seq2.s != NULL) {
+				LCSFindAndPrintWithoutBtableRecursive(&seq1, &seq2);
+			}
+			break;
+		case 7:
+			if (seq1.s != NULL && seq2.s != NULL) {
+				LCSFindAndPrintLength(&seq1, &seq2);
 			}
 			break;
 		default:
