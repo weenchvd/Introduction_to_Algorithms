@@ -36,6 +36,9 @@ int main(void)
 			printf(list);
 			break;
 		case 1:
+			if (pr.p != NULL || pr.q != NULL) {
+				break;
+			}
 			printf("Please enter the number of keys: ");
 			if (scanf("%d", &pr.n) <= 0) {
 				printf("\n\n\t| ERROR | Incorrect input |\n");

@@ -2,9 +2,16 @@
 
 void BSTOptimalConstruct(BSTPr_t* pr)
 {
+	int ci;
 	BSTATables_t t;
 	BSTOptimal(pr, &t);
+	printf("BSTOptimalPrint:\n");
 	BSTOptimalPrint(pr, &t, 1, pr->n);
+	printf("BSTOptimalPrint2:\n");
+	ci = t.r[rtitem(1, pr->n, pr->n)];
+	printf("\tk%d is the root\n", ci);
+	BSTOptimalPrint2(pr, &t, 1, ci - 1, LEFT, ci);
+	BSTOptimalPrint2(pr, &t, ci + 1, pr->n, RIGHT, ci);
 	free(t.e);
 	free(t.w);
 	return;
@@ -63,6 +70,24 @@ void BSTOptimalPrint(BSTPr_t* pr, BSTATables_t* t, int i, int j)
 	else {
 		printf("\tk%d is the right child of k%d\n", t->r[rtitem((ci + 1), j, pr->n)], ci);
 		BSTOptimalPrint(pr, t, ci + 1, j);
+	}
+	return;
+}
+
+void BSTOptimalPrint2(BSTPr_t* pr, BSTATables_t* t, int i, int j, int direction, int last)
+{
+	int ci;
+	if (i <= j) {
+		ci = t->r[rtitem(i, j, pr->n)];
+		printf("\tk%d is the %s child of k%d\n", ci, (direction == LEFT) ? "left" : "right", last);
+		BSTOptimalPrint2(pr, t, i, ci - 1, LEFT, ci);
+		BSTOptimalPrint2(pr, t, ci + 1, j, RIGHT, ci);
+	}
+	else if (direction == LEFT) {
+		printf("\td%d is the left child of k%d\n", i - 1, last);
+	}
+	else {
+		printf("\td%d is the right child of k%d\n", j, last);
 	}
 	return;
 }
