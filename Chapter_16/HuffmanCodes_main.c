@@ -26,7 +26,7 @@ int main(int argc, char* argv[])
 		printf("Please enter the \'PATH/NAME.EXT\' as an argument\n");
 		return FAILURE;
 	}
-	if ((fo = fopen(argv[1], "r")) == NULL) {
+	if ((fo = fopen(argv[1], "rb")) == NULL) {
 		perror("\n\n\t| ERROR | ");
 		return FAILURE;
 	}
@@ -37,12 +37,12 @@ int main(int argc, char* argv[])
 		perror("\n\n\t| ERROR | ");
 		return FAILURE;
 	}
-	if (fn.optype) {
+	if (fn.optype == DECOMPRESSTXT) {
 		if (DecompressFile(fo, fw) == FAILURE) {
 			return FAILURE;
 		}
 	}
-	else {
+	else if (fn.optype == COMPRESSTXT) {
 		if (CompressFile(fo, fw) == FAILURE) {
 			return FAILURE;
 		}

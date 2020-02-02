@@ -25,11 +25,11 @@ int ParseFilename(FNSet_t* fn, char* argv)
 		fn->ext[k] = '\0';
 	}
 	if (strcmp(fn->ext, "txt") == 0) {
-		fn->optype = 0;
-		strcat(fn->pathname, "z8");
+		fn->optype = COMPRESSTXT;
+		strcat(fn->pathname, OUTPUTFILEEXTENSION);
 	}
-	else if (strcmp(fn->ext, "z8") == 0) {
-		fn->optype = 1;
+	else if (strcmp(fn->ext, OUTPUTFILEEXTENSION) == 0) {
+		fn->optype = DECOMPRESSTXT;
 		strcat(fn->pathname, "txt");
 	}
 	else {
@@ -80,36 +80,21 @@ int CompressFile(FILE* fo, FILE* fw)
 
 int DecompressFile(FILE* fo, FILE* fw)
 {
-
-	return;
+	FBT_t* root;
+	FileHeader_t fh;
+	root = NULL;
+	if (ParseFileHeader(fo, &fh) == FAILURE) {
+		return FAILURE;
+	}
+	if (fh.uniquesymbols > 1 && (root = ReconstructHuffmanCode(&fh)) == NULL) {
+		return FAILURE;
+	}
+	if (DecodeSymbols(fo, fw, &fh, root) == FAILURE) {
+		return FAILURE;
+	}
+	FreeFBTNode(root);
+	return SUCCESS;
 }
-
-/*void BuildAlphabet(FILE* fo, Alphabet_t* alph)
-{
-	int i, j, bufsize;
-	char buf[BUFFERSIZE];
-	for (i = HEAPSTARTINDEX; i < ALPHABETSIZE + HEAPSTARTINDEX; i++) {
-		alph->symbol[i] = i - HEAPSTARTINDEX;
-		alph->freq[i] = 0;
-	}
-	do {
-		bufsize = fread(buf, sizeof(char), BUFFERSIZE, fo);
-		for (i = 0; i < bufsize; i++) {
-			alph->freq[buf[i] + HEAPSTARTINDEX]++;
-		}
-	} while (bufsize == BUFFERSIZE);
-	rewind(fo);
-	alph->uniquesymbols = alph->totalsymbols = 0;
-	for (i = j = 0 + HEAPSTARTINDEX; i < ALPHABETSIZE + HEAPSTARTINDEX; i++) {
-		if (alph->freq[i] > 0) {
-			alph->uniquesymbols++;
-			alph->totalsymbols += alph->freq[i];
-			alph->freq[j] = alph->freq[i];
-			alph->symbol[j++] = alph->symbol[i];
-		}
-	}
-	return;
-}*/
 
 void BuildAlphabet(FILE* fo, Alphabet_t* alph)
 {
@@ -172,11 +157,11 @@ FBT_t* CreateFBTNode(int freq, int symbol)
 int WalkThroughTree(FILE* fw, Alphabet_t* alph, FBT_t* root, SymbolCode_t* symcode)
 {
 	int i;
-	unsigned char structp;					/* pointer of structure of full binary tree */
+	unsigned int structp;					/* pointer of structure of full binary tree */
 	char structure[2 * ALPHABETSIZE - 1];	/* structure of full binary tree */
-	unsigned char cscp;						/* code pointer of current symbol code */
+	unsigned int cscp;						/* code pointer of current symbol code */
 	char cursymcode[ALPHABETSIZE];			/* code of the current symbol */
-	unsigned char ap;						/* alphabet pointer */
+	unsigned int ap;						/* alphabet pointer */
 	char alphabet[ALPHABETSIZE];			/* alphabet in order of walking through the tree */
 	unsigned char bitfield;
 	FBT_t* node, * prev;
@@ -202,6 +187,7 @@ int WalkThroughTree(FILE* fw, Alphabet_t* alph, FBT_t* root, SymbolCode_t* symco
 	structp = cscp = ap = 0;
 	prev = root;
 	node = root->left;
+	structure[structp++] = INTERNALNODE;
 	cursymcode[cscp++] = LEFTDIR;
 	while (node != root) {
 		if (node->symbol == FBTINTERNALNODE) { /* node == internal node */
@@ -296,7 +282,6 @@ int WalkThroughTree(FILE* fw, Alphabet_t* alph, FBT_t* root, SymbolCode_t* symco
 				printf("\n\n\t| ERROR | fwrite |\n");
 				return FAILURE;
 			}
-			bitfield = 0; //TODO remove
 		}
 	}
 	if ((i %= CHAR_BIT) != 0) {
@@ -332,7 +317,7 @@ int EncodeSymbols(FILE* fo, FILE* fw, SymbolCode_t* symcode)
 						printf("\n\n\t| ERROR | fwrite |\n");
 						return FAILURE;
 					}
-					bitfield = bfp = 0; //TODO remove bitfield
+					bfp = 0;
 				}
 			}
 		}
@@ -352,11 +337,13 @@ int EncodeSymbols(FILE* fo, FILE* fw, SymbolCode_t* symcode)
 
 void FreeFBTNode(FBT_t* root)
 {
-	if (root->symbol == FBTINTERNALNODE) {
-		FreeFBTNode(root->left);
-		FreeFBTNode(root->right);
+	if (root != NULL) {
+		if (root->symbol == FBTINTERNALNODE) {
+			FreeFBTNode(root->left);
+			FreeFBTNode(root->right);
+		}
+		free(root);
 	}
-	free(root);
 	return;
 }
 
@@ -457,4 +444,143 @@ void MinHeapify(FBTHeapQueue_t* queue, int index)
 		}
 	}
 	return;
+}
+
+int ParseFileHeader(FILE* fo, FileHeader_t* fh)
+{
+	int structsizeinbits, structsizeinbytes;
+	if (fread(&fh->totalsymbols, sizeof(unsigned int), 1, fo) != 1) { /* read item {#1} */
+		printf("\n\n\t| ERROR | fread |\n");
+		return FAILURE;
+	}
+	if (fread(&fh->uniquesymbols, sizeof(unsigned char), 1, fo) != 1) { /* read item {#2} */
+		printf("\n\n\t| ERROR | fread |\n");
+		return FAILURE;
+	}
+	if (fread(fh->symbolsinorder, sizeof(char), fh->uniquesymbols, fo) != fh->uniquesymbols) { /* read item {#3} */
+		printf("\n\n\t| ERROR | fread |\n");
+		return FAILURE;
+	}
+	if (fh->uniquesymbols == 1) {
+		return SUCCESS;
+	}
+	structsizeinbits = 2 * fh->uniquesymbols - 1;
+	structsizeinbytes = structsizeinbits / CHAR_BIT;
+	if (structsizeinbits % CHAR_BIT > 0) {
+		structsizeinbytes++;
+	}
+	if (fread(fh->structure, sizeof(char), structsizeinbytes, fo) != structsizeinbytes) { /* read item {#4} */
+		printf("\n\n\t| ERROR | fread |\n");
+		return FAILURE;
+	}
+	return SUCCESS;
+}
+
+FBT_t* ReconstructHuffmanCode(FileHeader_t* fh)
+{
+	int i, j, k, nodetype, structsizeinbits;
+	char bfp;
+	unsigned char bitfield;
+	FBT_t** node, * root, * prev;
+	structsizeinbits = 2 * fh->uniquesymbols - 1;
+	if ((root = CreateFBTNode(0, FBTINTERNALNODE)) == NULL) {
+		return NULL;
+	}
+	prev = root;
+	node = &prev->left;
+	k = j = 0;
+	bitfield = fh->structure[k];
+	bfp = CHAR_BIT - 1;
+	for (i = 1; i < structsizeinbits; i++) {
+		if (bfp < 1) {
+			bfp = CHAR_BIT;
+			bitfield = fh->structure[++k];
+		}
+		if ((nodetype = bitfield >> --bfp & LEAFNODE) == LEAFNODE) {
+			if ((*node = CreateFBTNode(0, fh->symbolsinorder[j++])) == NULL) {
+				return NULL;
+			}
+			(*node)->parent = prev;
+			if (*node == prev->left) {
+				node = &prev->right;
+			}
+			else if (i < structsizeinbits - 1) { /* *node == prev->right */
+				while (*node != prev->left) {
+					node = &prev->right->parent;
+					prev = prev->parent;
+				}
+				node = &prev->right;
+			}
+		}
+		else { /* the next node is INTERNALNODE */
+			if ((*node = CreateFBTNode(0, FBTINTERNALNODE)) == NULL) {
+				return NULL;
+			}
+			(*node)->parent = prev;
+			prev = *node;
+			node = &(*node)->left;
+		}
+	}
+	return root;
+}
+
+int DecodeSymbols(FILE* fo, FILE* fw, FileHeader_t* fh, FBT_t* root)
+{
+	unsigned int i, k;
+	long long int j;
+	int r;									/* number of symbols in the buffer after reading */
+	int n;									/* number of symbols in the buffer for write */
+	unsigned char rbuf[BUFFERSIZE];			/* buffer for read */
+	char wbuf[BUFFERSIZE];					/* buffer for write */
+	char bfp;								/* bitfield pointer */
+	unsigned char bitfield;
+	FBT_t* node;
+	if (fh->uniquesymbols == 1) {
+		char symbol;
+		symbol = fh->symbolsinorder[0];
+		for (i = k = 0; i < fh->totalsymbols; i += n) {
+			j = (long long int)fh->totalsymbols - ++k * BUFFERSIZE;
+			j = (j >= 0) ? BUFFERSIZE : BUFFERSIZE + j;
+			for (n = 0; n < j; n++) {
+				wbuf[n] = symbol;
+			}
+			if (fwrite(wbuf, sizeof(char), n, fw) != n) { /* write the decoded item {#5} */
+				printf("\n\n\t| ERROR | fwrite |\n");
+				return FAILURE;
+			}
+		}
+		return SUCCESS;
+	}
+	if (root == NULL) {
+		return FAILURE;
+	}
+	for (i = k = r = n = bfp = 0; i < fh->totalsymbols; i++) {
+		node = root;
+		while (node->symbol == FBTINTERNALNODE) {
+			if (bfp < 1) {
+				bfp = CHAR_BIT;
+				if (k >= r) {
+					k = 0;
+					r = fread(rbuf, sizeof(unsigned char), BUFFERSIZE, fo);
+				}
+				bitfield = rbuf[k++];
+			}
+			node = ((bitfield >> --bfp & 1) == LEFTDIR) ? node->left : node->right;
+		}
+		if (n >= BUFFERSIZE) {
+			if (fwrite(wbuf, sizeof(char), n, fw) != n) { /* write the decoded item {#5} */
+				printf("\n\n\t| ERROR | fwrite |\n");
+				return FAILURE;
+			}
+			n = 0;
+		}
+		wbuf[n++] = node->symbol;
+	}
+	if (n > 0) {
+		if (fwrite(wbuf, sizeof(char), n, fw) != n) { /* write the decoded item {#5} */
+			printf("\n\n\t| ERROR | fwrite |\n");
+			return FAILURE;
+		}
+	}
+	return SUCCESS;
 }

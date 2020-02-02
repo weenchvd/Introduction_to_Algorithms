@@ -7,10 +7,16 @@
 #define EXTSIZE 4
 #define FBTHEAPQUEUESIZE (2 * ALPHABETSIZE - 1) + HEAPSTARTINDEX
 
+#if (2 * ALPHABETSIZE) % CHAR_BIT > 0
+#define STRUCTURESIZE (2 * ALPHABETSIZE) / CHAR_BIT + 1
+#else
+#define STRUCTURESIZE (2 * ALPHABETSIZE) / CHAR_BIT
+#endif
+
 typedef struct FilenameSet {
 	char pathname[PATHNAMESIZE];
 	char ext[EXTSIZE];						/* .txt OR .z8 */
-	char optype;							/* 0 - source, 1 - compressed */
+	char optype;							/* 1 - source, 0 - compressed */
 } FNSet_t;
 
 typedef struct Alphabet {
@@ -23,6 +29,13 @@ typedef struct Alphabet {
 typedef struct SymbolCode {
 	char* code[ALPHABETSIZE];
 } SymbolCode_t;
+
+typedef struct FileHeader {
+	unsigned int totalsymbols;
+	unsigned char uniquesymbols;
+	char symbolsinorder[ALPHABETSIZE];
+	char structure[STRUCTURESIZE];
+} FileHeader_t;
 
 typedef struct FullBinaryTree {
 	struct FullBinaryTree* parent;

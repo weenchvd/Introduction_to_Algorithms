@@ -31,5 +31,8 @@ FBTHeapQueue_t* HeapExtractMin(FBTHeapQueue_t* queue);
 void MinHeapInsert(FBTHeapQueue_t* queue, FBT_t* node);
 void HeapDecreaseKey(FBTHeapQueue_t* queue, int index, int freq);
 void MinHeapify(FBTHeapQueue_t* queue, int index);
+int ParseFileHeader(FILE* fo, FileHeader_t* fh);
+FBT_t* ReconstructHuffmanCode(FileHeader_t* fh);
+int DecodeSymbols(FILE* fo, FILE* fw, FileHeader_t* fh, FBT_t* root);
 
 #endif
