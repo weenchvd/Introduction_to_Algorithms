@@ -53,7 +53,7 @@ int CreateGraph(GraphSet_t* graph)
 	}
 	for (i = 0; i < graph->vertexnum; i++) {
 		for (j = 1; j < graph->vertexnum; j++) {
-			printf("For vertex #%d, enter the number of the next vertex between which there is a edge. "
+			printf("For vertex #%d, enter the number of the next vertex between which there is an edge. "
 				"Enter 0 to go to the next vertex: ", i + DIFFERENCE);
 			if (scanf("%d", &k) <= 0) {
 				printf("\n\t| ERROR | Incorrect input |\n\n");
@@ -162,6 +162,42 @@ void BreadthFirstSearch(GraphSet_t* graph, GraphVertex_t* vertex)
 	return;
 }
 
+unsigned int time;
+
+void DepthFirstSearch(GraphSet_t* graph)
+{
+	int i;
+	for (i = 0; i < graph->vertexnum; i++) {
+		graph->vertlist[i]->color = WHITE;
+		graph->vertlist[i]->parent = NULL;
+	}
+	time = 0;
+	for (i = 0; i < graph->vertexnum; i++) {
+		if (graph->vertlist[i]->color == WHITE) {
+			DepthFirstSearchVisit(graph, graph->vertlist[i]);
+		}
+	}
+	return;
+}
+
+void DepthFirstSearchVisit(GraphSet_t* graph, GraphVertex_t* vertex)
+{
+	AdjacencyListSet_t* adjset;
+	vertex->discovered = ++time;
+	vertex->color = GRAY;
+	adjset = graph->adjlist[vertex->number - DIFFERENCE];
+	while (adjset != NULL) {
+		if (adjset->vertex->color == WHITE) {
+			adjset->vertex->parent = vertex;
+			DepthFirstSearchVisit(graph, adjset->vertex);
+		}
+		adjset = adjset->next;
+	}
+	vertex->color = BLACK;
+	vertex->finished = ++time;
+	return;
+}
+
 void Enqueue(QueueSet_t* q, GraphVertex_t* x)
 {
 	if (IsQueueFull(q) == TRUE) {
@@ -196,6 +232,24 @@ inline int IsQueueFull(QueueSet_t* q)
 	return (q->head == ((q->tail + 1 == q->size) ? ARRAYSTARTINDEX : q->tail + 1)) ? TRUE : FALSE;
 }
 
+void PrintPath(GraphSet_t* graph, GraphVertex_t* source, GraphVertex_t* destination)
+{
+	if (destination == source) {
+		PrintVertex(source);
+		putchar('\n');
+	}
+	else if (destination->parent == NULL) {
+		printf("\n\t| ERROR | No path from vertex #%d to vertex #%d exists |\n\n",
+			source->number, destination->number);
+	}
+	else {
+		PrintPath(graph, source, destination->parent);
+		PrintVertex(destination);
+		putchar('\n');
+	}
+	return;
+}
+
 void PrintGraph(GraphSet_t* graph)
 {
 	int i;
@@ -222,6 +276,32 @@ void PrintBreadthFirstTree(GraphSet_t* graph)
 	return;
 }
 
+void PrintDepthFirstTree(GraphSet_t* graph)
+{
+	int i, j;
+	char* printed;
+	if ((printed = malloc(sizeof(char) * graph->vertexnum)) == NULL) {
+		printf("\n\t| ERROR | Memory allocator error. No memory allocated |\n\n");
+		return;
+	}
+	for (i = 0; i < graph->vertexnum; i++) {
+		printed[i] = FALSE;
+	}
+	printf("Depth-first tree:\n");
+	for (i = 1; i <= 2 * graph->vertexnum; i++) {
+		for (j = 0; j < graph->vertexnum; j++) {
+			if (printed[j] == FALSE && graph->vertlist[j]->discovered == i) {
+				PrintVertex(graph->vertlist[j]);
+				putchar('\n');
+				printed[graph->vertlist[j]->number - DIFFERENCE] = TRUE;
+				break;
+			}
+		}
+	}
+	free(printed);
+	return;
+}
+
 void PrintVertex(GraphVertex_t* vertex)
 {
 	char color[10];
@@ -243,8 +323,8 @@ void PrintVertex(GraphVertex_t* vertex)
 			strcpy(color, "ERROR");
 			break;
 		}
-		printf("  Addr: %p  Num: %4d  Dist: %10d  Color: %-9s  Par: %p",
-			vertex, vertex->number, vertex->distance, color, vertex->parent);
+		printf("  Addr: %p  Num: %4d  Dist: %10d  Disc: %4d  Fin: %4d  Color: %-9s  Par: %p",
+			vertex, vertex->number, vertex->distance, vertex->discovered, vertex->finished, color, vertex->parent);
 	}
 	return;
 }

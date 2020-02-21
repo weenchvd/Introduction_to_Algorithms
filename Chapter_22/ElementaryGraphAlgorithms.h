@@ -11,12 +11,16 @@
 int CreateGraph(GraphSet_t* graph);
 int IsVertexInAdjacencyList(AdjacencyListSet_t* adjset, GraphVertex_t* vertex);
 void BreadthFirstSearch(GraphSet_t* graph, GraphVertex_t* vertex);
+void DepthFirstSearch(GraphSet_t* graph);
+void DepthFirstSearchVisit(GraphSet_t* graph, GraphVertex_t* vertex);
 void Enqueue(QueueSet_t* q, GraphVertex_t* x);
 GraphVertex_t* Dequeue(QueueSet_t* q);
 inline int IsQueueEmpty(QueueSet_t* q);
 inline int IsQueueFull(QueueSet_t* q);
+void PrintPath(GraphSet_t* graph, GraphVertex_t* source, GraphVertex_t* destination);
 void PrintGraph(GraphSet_t* graph);
 void PrintBreadthFirstTree(GraphSet_t* graph);
+void PrintDepthFirstTree(GraphSet_t* graph);
 void PrintVertex(GraphVertex_t* vertex);
 void PrintAdjacencyList(AdjacencyListSet_t* adjset);
 

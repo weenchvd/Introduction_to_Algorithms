@@ -1,5 +1,6 @@
 /* Chapter 22.1 | Elementary-Graph-Algorithms */
 /* Chapter 22.2 | Elementary-Graph-Algorithms */
+/* Chapter 22.3 | Elementary-Graph-Algorithms */
 
 #include "ElementaryGraphAlgorithms_common.h"
 #include "ElementaryGraphAlgorithms_struct.h"
@@ -8,20 +9,21 @@
 
 int CreateGraph(GraphSet_t* graph);
 void BreadthFirstSearch(GraphSet_t* graph, GraphVertex_t* vertex);
+void DepthFirstSearch(GraphSet_t* graph);
+void PrintPath(GraphSet_t* graph, GraphVertex_t* source, GraphVertex_t* destination);
 void PrintGraph(GraphSet_t* graph);
 void PrintBreadthFirstTree(GraphSet_t* graph);
+void PrintDepthFirstTree(GraphSet_t* graph);
 void FreeGraph(GraphSet_t* graph);
 
 int main(void)
 {
 	int i, cond, action;
-	char* list = "\tList of action: -1 (EXIT), 0 (List of action),\n"
-		"1 (CreateGraph), 2 (BreadthFirstSearch), 3 (---------),\n"
-		"4 (PrintGraph), 5 (----------), 6 (-----------)\n"
-		"7 (------------)\n\n";
+	char* list = "\tList of actions: -1 (EXIT), 0 (List of actions),\n"
+		"1 (CreateGraph), 2 (BreadthFirstSearch), 3 (DepthFirstSearch),\n"
+		"4 (PrintGraph)\n\n";
 	GraphSet_t graph;
 	GraphVertex_t* vertex;
-	//AdjacencyListSet_t* adjset;
 	printf(list);
 	graph.vertexnum = graph.type = 0;
 	graph.adjlist = NULL;
@@ -64,9 +66,21 @@ int main(void)
 			vertex = graph.vertlist[i - DIFFERENCE];
 			BreadthFirstSearch(&graph, vertex);
 			PrintBreadthFirstTree(&graph);
+			printf("Please enter the vertex number to display the path from vertex #%d to this vertex: ", vertex->number);
+			if (scanf("%d", &i) <= 0) {
+				printf("\n\t| ERROR | Incorrect input |\n\n");
+				break;
+			}
+			if (i < 1 || i > graph.vertexnum) {
+				printf("\n\t| ERROR | The number must be from 1 to %d |\n\n", graph.vertexnum);
+				break;
+			}
+			printf("The path from vertex #%d to vertex #%d:\n", vertex->number, i);
+			PrintPath(&graph, vertex, graph.vertlist[i - DIFFERENCE]);
 			break;
 		case 3:
-
+			DepthFirstSearch(&graph);
+			PrintDepthFirstTree(&graph);
 			break;
 		case 4:
 			PrintGraph(&graph);

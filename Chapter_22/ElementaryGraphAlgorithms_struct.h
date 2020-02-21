@@ -14,6 +14,8 @@ typedef struct GraphVertex {
 	struct GraphVertex* parent;
 	int number;
 	int distance;
+	int discovered;
+	int finished;
 	char color;
 } GraphVertex_t;
 
