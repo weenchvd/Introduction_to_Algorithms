@@ -3,12 +3,12 @@
 
 #include "ElementaryGraphAlgorithms_common.h"
 
-typedef struct GraphSet {
-	struct AdjacencyListSet** adjlist;
+typedef struct Graph {
+	struct AdjacencyList** adjlist;
 	struct GraphVertex** vertlist;
 	int vertexnum;							/* number of vertices */
 	char type;								/* graph type: directed or undirected */
-} GraphSet_t;
+} Graph_t;
 
 typedef struct GraphVertex {
 	struct GraphVertex* parent;
@@ -19,16 +19,20 @@ typedef struct GraphVertex {
 	char color;
 } GraphVertex_t;
 
-typedef struct AdjacencyListSet {
+typedef struct AdjacencyList {
 	struct GraphVertex* vertex;
-	struct AdjacencyListSet* next;
-} AdjacencyListSet_t;
+	struct AdjacencyList* next;
+} AdjacencyList_t;
 
-typedef struct QueueSet {
+typedef struct TopologicalList {
+	struct AdjacencyList* head;
+} TopologicalList_t;
+
+typedef struct Queue {
 	struct GraphVertex** queue;
 	unsigned int size;
 	unsigned int head;
 	unsigned int tail;
-} QueueSet_t;
+} Queue_t;
 
 #endif

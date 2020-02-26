@@ -1,10 +1,10 @@
 ﻿#include "ElementaryGraphAlgorithms.h"
 
-int CreateGraph(GraphSet_t* graph)
+int CreateGraph(Graph_t* graph)
 {
 	int i, j, k;
 	GraphVertex_t* vertex;
-	AdjacencyListSet_t* adjset, * adjset2;
+	AdjacencyList_t* adjset, * adjset2;
 	printf("Please enter a type of the graph (%d - Directed or %d - Undirected): ", DIRECTED, UNDIRECTED);
 	if (scanf("%d", &i) <= 0) {
 		printf("\n\t| ERROR | Incorrect input |\n\n");
@@ -24,7 +24,7 @@ int CreateGraph(GraphSet_t* graph)
 		printf("\n\t| ERROR | The number must be from 1 to %d |\n\n", INT_MAX);
 		return FAILURE;
 	}
-	if ((graph->adjlist = malloc(sizeof(AdjacencyListSet_t*) * graph->vertexnum)) == NULL) {
+	if ((graph->adjlist = malloc(sizeof(AdjacencyList_t*) * graph->vertexnum)) == NULL) {
 		printf("\n\t| ERROR | Memory allocator error. No memory allocated |\n\n");
 		return FAILURE;
 	}
@@ -69,7 +69,7 @@ int CreateGraph(GraphSet_t* graph)
 				break;
 			}
 			else {
-				if ((adjset = malloc(sizeof(AdjacencyListSet_t))) == NULL) {
+				if ((adjset = malloc(sizeof(AdjacencyList_t))) == NULL) {
 					printf("\n\t| ERROR | Memory allocator error. No memory allocated |\n\n");
 					j--;
 					continue;
@@ -94,7 +94,7 @@ int CreateGraph(GraphSet_t* graph)
 			while (adjset != NULL) {
 				k = adjset->vertex->number - DIFFERENCE;
 				if (IsVertexInAdjacencyList(graph->adjlist[k], graph->vertlist[i]) == FALSE) {
-					if ((adjset2 = malloc(sizeof(AdjacencyListSet_t))) == NULL) {
+					if ((adjset2 = malloc(sizeof(AdjacencyList_t))) == NULL) {
 						printf("\n\t| ERROR | Memory allocator error. No memory allocated |\n\n");
 						continue;
 					}
@@ -109,7 +109,7 @@ int CreateGraph(GraphSet_t* graph)
 	return SUCCESS;
 }
 
-int IsVertexInAdjacencyList(AdjacencyListSet_t* adjset, GraphVertex_t* vertex)
+int IsVertexInAdjacencyList(AdjacencyList_t* adjset, GraphVertex_t* vertex)
 {
 	while (adjset != NULL) {
 		if (adjset->vertex == vertex) {
@@ -120,12 +120,12 @@ int IsVertexInAdjacencyList(AdjacencyListSet_t* adjset, GraphVertex_t* vertex)
 	return FALSE;
 }
 
-void BreadthFirstSearch(GraphSet_t* graph, GraphVertex_t* vertex)
+void BreadthFirstSearch(Graph_t* graph, GraphVertex_t* vertex)
 {
 	int i;
-	QueueSet_t q;
+	Queue_t q;
 	GraphVertex_t* current, * descendant;
-	AdjacencyListSet_t* adjset;
+	AdjacencyList_t* adjset;
 	for (i = 0; i < graph->vertexnum; i++) {
 		if (graph->vertlist[i] != vertex) {
 			graph->vertlist[i]->color = WHITE;
@@ -164,7 +164,7 @@ void BreadthFirstSearch(GraphSet_t* graph, GraphVertex_t* vertex)
 
 unsigned int time;
 
-void DepthFirstSearch(GraphSet_t* graph)
+void DepthFirstSearch(Graph_t* graph, TopologicalList_t* tlist)
 {
 	int i;
 	for (i = 0; i < graph->vertexnum; i++) {
@@ -174,31 +174,41 @@ void DepthFirstSearch(GraphSet_t* graph)
 	time = 0;
 	for (i = 0; i < graph->vertexnum; i++) {
 		if (graph->vertlist[i]->color == WHITE) {
-			DepthFirstSearchVisit(graph, graph->vertlist[i]);
+			DepthFirstSearchVisit(graph, graph->vertlist[i], tlist);
 		}
 	}
 	return;
 }
 
-void DepthFirstSearchVisit(GraphSet_t* graph, GraphVertex_t* vertex)
+void DepthFirstSearchVisit(Graph_t* graph, GraphVertex_t* vertex, TopologicalList_t* tlist)
 {
-	AdjacencyListSet_t* adjset;
+	AdjacencyList_t* adjset;
 	vertex->discovered = ++time;
 	vertex->color = GRAY;
 	adjset = graph->adjlist[vertex->number - DIFFERENCE];
 	while (adjset != NULL) {
 		if (adjset->vertex->color == WHITE) {
 			adjset->vertex->parent = vertex;
-			DepthFirstSearchVisit(graph, adjset->vertex);
+			DepthFirstSearchVisit(graph, adjset->vertex, tlist);
 		}
 		adjset = adjset->next;
 	}
 	vertex->color = BLACK;
 	vertex->finished = ++time;
+	if (tlist != NULL) {
+		AdjacencyList_t* adjset2;
+		if ((adjset2 = malloc(sizeof(AdjacencyList_t))) == NULL) {
+			printf("\n\t| ERROR | Memory allocator error. No memory allocated |\n\n");
+			return;
+		}
+		adjset2->vertex = vertex;
+		adjset2->next = tlist->head;
+		tlist->head = adjset2;
+	}
 	return;
 }
 
-void Enqueue(QueueSet_t* q, GraphVertex_t* x)
+void Enqueue(Queue_t* q, GraphVertex_t* x)
 {
 	if (IsQueueFull(q) == TRUE) {
 		printf("\n\t| ERROR | Queue overflow |\n\n");
@@ -210,7 +220,7 @@ void Enqueue(QueueSet_t* q, GraphVertex_t* x)
 	return;
 }
 
-GraphVertex_t* Dequeue(QueueSet_t* q)
+GraphVertex_t* Dequeue(Queue_t* q)
 {
 	GraphVertex_t* x;
 	if (IsQueueEmpty(q) == TRUE) {
@@ -222,17 +232,23 @@ GraphVertex_t* Dequeue(QueueSet_t* q)
 	return x;
 }
 
-inline int IsQueueEmpty(QueueSet_t* q)
+inline int IsQueueEmpty(Queue_t* q)
 {
 	return (q->head == q->tail) ? TRUE : FALSE;
 }
 
-inline int IsQueueFull(QueueSet_t* q)
+inline int IsQueueFull(Queue_t* q)
 {
 	return (q->head == ((q->tail + 1 == q->size) ? ARRAYSTARTINDEX : q->tail + 1)) ? TRUE : FALSE;
 }
 
-void PrintPath(GraphSet_t* graph, GraphVertex_t* source, GraphVertex_t* destination)
+void TopologicalSort(Graph_t* graph, TopologicalList_t* tlist)
+{
+	DepthFirstSearch(graph, tlist);
+	return;
+}
+
+void PrintPath(Graph_t* graph, GraphVertex_t* source, GraphVertex_t* destination)
 {
 	if (destination == source) {
 		PrintVertex(source);
@@ -250,7 +266,7 @@ void PrintPath(GraphSet_t* graph, GraphVertex_t* source, GraphVertex_t* destinat
 	return;
 }
 
-void PrintGraph(GraphSet_t* graph)
+void PrintGraph(Graph_t* graph)
 {
 	int i;
 	for (i = 0; i < graph->vertexnum; i++) {
@@ -261,7 +277,7 @@ void PrintGraph(GraphSet_t* graph)
 	return;
 }
 
-void PrintBreadthFirstTree(GraphSet_t* graph)
+void PrintBreadthFirstTree(Graph_t* graph)
 {
 	int i, j;
 	printf("Breadth-first tree:\n");
@@ -276,7 +292,7 @@ void PrintBreadthFirstTree(GraphSet_t* graph)
 	return;
 }
 
-void PrintDepthFirstTree(GraphSet_t* graph)
+void PrintDepthFirstTree(Graph_t* graph)
 {
 	int i, j;
 	char* printed;
@@ -329,7 +345,7 @@ void PrintVertex(GraphVertex_t* vertex)
 	return;
 }
 
-void PrintAdjacencyList(AdjacencyListSet_t* adjset)
+void PrintAdjacencyList(AdjacencyList_t* adjset)
 {
 	if (adjset != NULL) {
 		printf("  AdjList:");

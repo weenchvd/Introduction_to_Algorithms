@@ -8,20 +8,21 @@
 #include <assert.h>
 #include <string.h>
 
-int CreateGraph(GraphSet_t* graph);
-int IsVertexInAdjacencyList(AdjacencyListSet_t* adjset, GraphVertex_t* vertex);
-void BreadthFirstSearch(GraphSet_t* graph, GraphVertex_t* vertex);
-void DepthFirstSearch(GraphSet_t* graph);
-void DepthFirstSearchVisit(GraphSet_t* graph, GraphVertex_t* vertex);
-void Enqueue(QueueSet_t* q, GraphVertex_t* x);
-GraphVertex_t* Dequeue(QueueSet_t* q);
-inline int IsQueueEmpty(QueueSet_t* q);
-inline int IsQueueFull(QueueSet_t* q);
-void PrintPath(GraphSet_t* graph, GraphVertex_t* source, GraphVertex_t* destination);
-void PrintGraph(GraphSet_t* graph);
-void PrintBreadthFirstTree(GraphSet_t* graph);
-void PrintDepthFirstTree(GraphSet_t* graph);
+int CreateGraph(Graph_t* graph);
+int IsVertexInAdjacencyList(AdjacencyList_t* adjset, GraphVertex_t* vertex);
+void BreadthFirstSearch(Graph_t* graph, GraphVertex_t* vertex);
+void DepthFirstSearch(Graph_t* graph, TopologicalList_t* tlist);
+void DepthFirstSearchVisit(Graph_t* graph, GraphVertex_t* vertex, TopologicalList_t* tlist);
+void Enqueue(Queue_t* q, GraphVertex_t* x);
+GraphVertex_t* Dequeue(Queue_t* q);
+inline int IsQueueEmpty(Queue_t* q);
+inline int IsQueueFull(Queue_t* q);
+void TopologicalSort(Graph_t* graph, TopologicalList_t* tlist);
+void PrintPath(Graph_t* graph, GraphVertex_t* source, GraphVertex_t* destination);
+void PrintGraph(Graph_t* graph);
+void PrintBreadthFirstTree(Graph_t* graph);
+void PrintDepthFirstTree(Graph_t* graph);
 void PrintVertex(GraphVertex_t* vertex);
-void PrintAdjacencyList(AdjacencyListSet_t* adjset);
+void PrintAdjacencyList(AdjacencyList_t* adjset);
 
 #endif

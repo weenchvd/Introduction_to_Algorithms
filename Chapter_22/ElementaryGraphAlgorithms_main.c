@@ -1,32 +1,38 @@
 /* Chapter 22.1 | Elementary-Graph-Algorithms */
 /* Chapter 22.2 | Elementary-Graph-Algorithms */
 /* Chapter 22.3 | Elementary-Graph-Algorithms */
+/* Chapter 22.4 | Elementary-Graph-Algorithms */
 
 #include "ElementaryGraphAlgorithms_common.h"
 #include "ElementaryGraphAlgorithms_struct.h"
 #include <stdio.h>
 #include <stdlib.h>
 
-int CreateGraph(GraphSet_t* graph);
-void BreadthFirstSearch(GraphSet_t* graph, GraphVertex_t* vertex);
-void DepthFirstSearch(GraphSet_t* graph);
-void PrintPath(GraphSet_t* graph, GraphVertex_t* source, GraphVertex_t* destination);
-void PrintGraph(GraphSet_t* graph);
-void PrintBreadthFirstTree(GraphSet_t* graph);
-void PrintDepthFirstTree(GraphSet_t* graph);
-void FreeGraph(GraphSet_t* graph);
+int CreateGraph(Graph_t* graph);
+void BreadthFirstSearch(Graph_t* graph, GraphVertex_t* vertex);
+void DepthFirstSearch(Graph_t* graph, TopologicalList_t* tlist);
+void TopologicalSort(Graph_t* graph, TopologicalList_t* tlist);
+void PrintPath(Graph_t* graph, GraphVertex_t* source, GraphVertex_t* destination);
+void PrintGraph(Graph_t* graph);
+void PrintBreadthFirstTree(Graph_t* graph);
+void PrintDepthFirstTree(Graph_t* graph);
+void PrintAdjacencyList(AdjacencyList_t* adjset);
+void FreeGraph(Graph_t* graph);
+void FreeAdjacencyList(AdjacencyList_t* adjset);
 
 int main(void)
 {
 	int i, cond, action;
 	char* list = "\tList of actions: -1 (EXIT), 0 (List of actions),\n"
 		"1 (CreateGraph), 2 (BreadthFirstSearch), 3 (DepthFirstSearch),\n"
-		"4 (PrintGraph)\n\n";
-	GraphSet_t graph;
+		"4 (TopologicalSort), 5 (PrintGraph)\n\n";
+	Graph_t graph;
+	TopologicalList_t tlist;
 	GraphVertex_t* vertex;
 	printf(list);
 	graph.vertexnum = graph.type = 0;
 	graph.adjlist = NULL;
+	tlist.head = NULL;
 	cond = TRUE;
 	while (cond) {
 		printf("Please enter an action: ");
@@ -79,10 +85,17 @@ int main(void)
 			PrintPath(&graph, vertex, graph.vertlist[i - DIFFERENCE]);
 			break;
 		case 3:
-			DepthFirstSearch(&graph);
+			DepthFirstSearch(&graph, NULL);
 			PrintDepthFirstTree(&graph);
 			break;
 		case 4:
+			TopologicalSort(&graph, &tlist);
+			PrintAdjacencyList(tlist.head);
+			putchar('\n');
+			FreeAdjacencyList(tlist.head);
+			tlist.head = NULL;
+			break;
+		case 5:
 			PrintGraph(&graph);
 			break;
 		default:
@@ -94,16 +107,23 @@ int main(void)
 	return SUCCESS;
 }
 
-void FreeGraph(GraphSet_t* graph)
+void FreeGraph(Graph_t* graph)
 {
 	int i;
-	AdjacencyListSet_t* adjset, * adjsetnext;
 	for (i = 0; i < graph->vertexnum; i++) {
-		for (adjset = graph->adjlist[i]; adjset != NULL; adjset = adjsetnext) {
-			adjsetnext = adjset->next;
-			free(adjset);
-		}
+		FreeAdjacencyList(graph->adjlist[i]);
 		free(graph->vertlist[i]);
+	}
+	return;
+}
+
+void FreeAdjacencyList(AdjacencyList_t* adjset)
+{
+	AdjacencyList_t* adjsetnext;
+	while (adjset != NULL) {
+		adjsetnext = adjset->next;
+		free(adjset);
+		adjset = adjsetnext;
 	}
 	return;
 }
