@@ -3,6 +3,7 @@
 
 #define DEBUG 1
 #define ARRAYSTARTINDEX 0
+#define PRINTGRAPHSTATE 1
 
 #define DIFFERENCE 1						/* difference between the first array number and the first vertex number */
 

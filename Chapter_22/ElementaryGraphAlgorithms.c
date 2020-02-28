@@ -5,7 +5,7 @@ int CreateGraph(Graph_t* graph)
 	int i, j, k;
 	GraphVertex_t* vertex;
 	AdjacencyList_t* adjset, * adjset2;
-	printf("Please enter a type of the graph (%d - Directed or %d - Undirected): ", DIRECTED, UNDIRECTED);
+	printf("  Please enter a type of the graph (%d - Directed or %d - Undirected): ", DIRECTED, UNDIRECTED);
 	if (scanf("%d", &i) <= 0) {
 		printf("\n\t| ERROR | Incorrect input |\n\n");
 		return FAILURE;
@@ -15,7 +15,7 @@ int CreateGraph(Graph_t* graph)
 		return FAILURE;
 	}
 	graph->type = i;
-	printf("Please enter number of vertices: ");
+	printf("  Please enter number of vertices: ");
 	if (scanf("%d", &graph->vertexnum) <= 0) {
 		printf("\n\t| ERROR | Incorrect input |\n\n");
 		return FAILURE;
@@ -33,8 +33,7 @@ int CreateGraph(Graph_t* graph)
 		return FAILURE;
 	}
 	for (i = j = 0; i < graph->vertexnum; i++) {
-		if ((vertex = malloc(sizeof(GraphVertex_t))) == NULL) {
-			printf("\n\t| ERROR | Memory allocator error. No memory allocated |\n\n");
+		if ((vertex = CreateVertex()) == NULL) {
 			j = i;
 			break;
 		}
@@ -53,7 +52,7 @@ int CreateGraph(Graph_t* graph)
 	}
 	for (i = 0; i < graph->vertexnum; i++) {
 		for (j = 1; j < graph->vertexnum; j++) {
-			printf("For vertex #%d, enter the number of the next vertex between which there is an edge. "
+			printf("  For vertex #%d, enter the number of the next vertex between which there is an edge. "
 				"Enter 0 to go to the next vertex: ", i + DIFFERENCE);
 			if (scanf("%d", &k) <= 0) {
 				printf("\n\t| ERROR | Incorrect input |\n\n");
@@ -69,8 +68,7 @@ int CreateGraph(Graph_t* graph)
 				break;
 			}
 			else {
-				if ((adjset = malloc(sizeof(AdjacencyList_t))) == NULL) {
-					printf("\n\t| ERROR | Memory allocator error. No memory allocated |\n\n");
+				if ((adjset = CreateAdjacencySet()) == NULL) {
 					j--;
 					continue;
 				}
@@ -107,6 +105,26 @@ int CreateGraph(Graph_t* graph)
 		}
 	}
 	return SUCCESS;
+}
+
+GraphVertex_t* CreateVertex()
+{
+	GraphVertex_t* vertex;
+	if ((vertex = malloc(sizeof(GraphVertex_t))) == NULL) {
+		printf("\n\t| ERROR | Memory allocator error. No memory allocated |\n\n");
+		return NULL;
+	}
+	return vertex;
+}
+
+AdjacencyList_t* CreateAdjacencySet()
+{
+	AdjacencyList_t* adjset;
+	if ((adjset = malloc(sizeof(AdjacencyList_t))) == NULL) {
+		printf("\n\t| ERROR | Memory allocator error. No memory allocated |\n\n");
+		return NULL;
+	}
+	return adjset;
 }
 
 int IsVertexInAdjacencyList(AdjacencyList_t* adjset, GraphVertex_t* vertex)
@@ -164,7 +182,7 @@ void BreadthFirstSearch(Graph_t* graph, GraphVertex_t* vertex)
 
 unsigned int time;
 
-void DepthFirstSearch(Graph_t* graph, TopologicalList_t* tlist)
+void DepthFirstSearch(Graph_t* graph, TopologicalList_t* tlist, TopologicalList_t* order)
 {
 	int i;
 	for (i = 0; i < graph->vertexnum; i++) {
@@ -172,9 +190,21 @@ void DepthFirstSearch(Graph_t* graph, TopologicalList_t* tlist)
 		graph->vertlist[i]->parent = NULL;
 	}
 	time = 0;
-	for (i = 0; i < graph->vertexnum; i++) {
-		if (graph->vertlist[i]->color == WHITE) {
-			DepthFirstSearchVisit(graph, graph->vertlist[i], tlist);
+	if (order != NULL) {
+		AdjacencyList_t* adjset;
+		adjset = order->head;
+		while (adjset != NULL) {
+			if (adjset->vertex->color == WHITE) {
+				DepthFirstSearchVisit(graph, adjset->vertex, tlist);
+			}
+			adjset = adjset->next;
+		}
+	}
+	else {
+		for (i = 0; i < graph->vertexnum; i++) {
+			if (graph->vertlist[i]->color == WHITE) {
+				DepthFirstSearchVisit(graph, graph->vertlist[i], tlist);
+			}
 		}
 	}
 	return;
@@ -197,8 +227,7 @@ void DepthFirstSearchVisit(Graph_t* graph, GraphVertex_t* vertex, TopologicalLis
 	vertex->finished = ++time;
 	if (tlist != NULL) {
 		AdjacencyList_t* adjset2;
-		if ((adjset2 = malloc(sizeof(AdjacencyList_t))) == NULL) {
-			printf("\n\t| ERROR | Memory allocator error. No memory allocated |\n\n");
+		if ((adjset2 = CreateAdjacencySet()) == NULL) {
 			return;
 		}
 		adjset2->vertex = vertex;
@@ -242,9 +271,99 @@ inline int IsQueueFull(Queue_t* q)
 	return (q->head == ((q->tail + 1 == q->size) ? ARRAYSTARTINDEX : q->tail + 1)) ? TRUE : FALSE;
 }
 
-void TopologicalSort(Graph_t* graph, TopologicalList_t* tlist)
+void TopologicalSort(Graph_t* graph, TopologicalList_t* tlist, TopologicalList_t* order)
 {
-	DepthFirstSearch(graph, tlist);
+	DepthFirstSearch(graph, tlist, order);
+	return;
+}
+
+void StronglyConnectedComponents(Graph_t* graph)
+{
+	int i;
+	TopologicalList_t tlist, order;
+	tlist.head = NULL;
+#if PRINTGRAPHSTATE
+	printf("The initial graph\n");
+	PrintGraph(graph);
+#endif // PRINTGRAPHSTATE
+	TopologicalSort(graph, &tlist, NULL);
+#if PRINTGRAPHSTATE
+	printf("The graph after TopologicalSort()\n");
+	PrintGraph(graph);
+#endif // PRINTGRAPHSTATE
+	TransposeGraph(graph);
+#if PRINTGRAPHSTATE
+	printf("The graph after TransposeGraph()\n");
+	PrintGraph(graph);
+#endif // PRINTGRAPHSTATE
+	order.head = tlist.head;
+	tlist.head = NULL;
+	TopologicalSort(graph, &tlist, &order);
+#if PRINTGRAPHSTATE
+	printf("The graph after TopologicalSort()\n");
+	PrintGraph(graph);
+	putchar('\n');
+#endif // PRINTGRAPHSTATE
+	PrintSCCVertices(&tlist);
+	TransposeGraph(graph);
+#if PRINTGRAPHSTATE
+	putchar('\n');
+	printf("The graph after TransposeGraph()\n");
+	PrintGraph(graph);
+#endif // PRINTGRAPHSTATE
+	FreeAdjacencyList(tlist.head);
+	FreeAdjacencyList(order.head);
+	return;
+}
+
+void TransposeGraph(Graph_t* graph)
+{
+	int i, j;
+	AdjacencyList_t* adjset, * adjsetnext, ** adjlisttransposed;
+	if ((adjlisttransposed = malloc(sizeof(AdjacencyList_t*) * graph->vertexnum)) == NULL) {
+		printf("\n\t| ERROR | Memory allocator error. No memory allocated |\n\n");
+		return;
+	}
+	for (i = 0; i < graph->vertexnum; i++) {
+		adjlisttransposed[i] = NULL;
+	}
+	for (i = 0; i < graph->vertexnum; i++) {
+		adjset = graph->adjlist[i];
+		while (adjset != NULL) {
+			adjsetnext = adjset->next;
+			j = adjset->vertex->number - DIFFERENCE;
+			adjset->vertex = graph->vertlist[i];
+			adjset->next = adjlisttransposed[j];
+			adjlisttransposed[j] = adjset;
+			adjset = adjsetnext;
+		}
+	}
+	free(graph->adjlist);
+	graph->adjlist = adjlisttransposed;
+	return;
+}
+
+/* the function prints vertices of strongly connected components */
+void PrintSCCVertices(TopologicalList_t* tlist)
+{
+	int i;
+	const char* message = "  Vertices of a strongly connected component #";
+	AdjacencyList_t* adjset;
+	i = 0;
+	adjset = tlist->head;
+	while (adjset != NULL) {
+		if (adjset->vertex->parent == NULL) {
+			if (i > 0) {
+				printf("\b \n");
+			}
+			printf("%s%d:", message, ++i);
+		}
+		printf(" %d,", adjset->vertex->number);
+		adjset = adjset->next;
+	}
+	if (i > 0) {
+		printf("\b \n");
+	}
 	return;
 }
 

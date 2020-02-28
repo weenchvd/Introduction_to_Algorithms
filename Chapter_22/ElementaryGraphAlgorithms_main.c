@@ -2,30 +2,33 @@
 /* Chapter 22.2 | Elementary-Graph-Algorithms */
 /* Chapter 22.3 | Elementary-Graph-Algorithms */
 /* Chapter 22.4 | Elementary-Graph-Algorithms */
+/* Chapter 22.5 | Elementary-Graph-Algorithms */
 
 #include "ElementaryGraphAlgorithms_common.h"
 #include "ElementaryGraphAlgorithms_struct.h"
 #include <stdio.h>
 #include <stdlib.h>
 
+void FreeGraph(Graph_t* graph);
+void FreeAdjacencyList(AdjacencyList_t* adjset);
+
 int CreateGraph(Graph_t* graph);
 void BreadthFirstSearch(Graph_t* graph, GraphVertex_t* vertex);
-void DepthFirstSearch(Graph_t* graph, TopologicalList_t* tlist);
-void TopologicalSort(Graph_t* graph, TopologicalList_t* tlist);
+void DepthFirstSearch(Graph_t* graph, TopologicalList_t* tlist, TopologicalList_t* order);
+void TopologicalSort(Graph_t* graph, TopologicalList_t* tlist, TopologicalList_t* order);
+void StronglyConnectedComponents(Graph_t* graph);
 void PrintPath(Graph_t* graph, GraphVertex_t* source, GraphVertex_t* destination);
 void PrintGraph(Graph_t* graph);
 void PrintBreadthFirstTree(Graph_t* graph);
 void PrintDepthFirstTree(Graph_t* graph);
 void PrintAdjacencyList(AdjacencyList_t* adjset);
-void FreeGraph(Graph_t* graph);
-void FreeAdjacencyList(AdjacencyList_t* adjset);
 
 int main(void)
 {
 	int i, cond, action;
 	char* list = "\tList of actions: -1 (EXIT), 0 (List of actions),\n"
 		"1 (CreateGraph), 2 (BreadthFirstSearch), 3 (DepthFirstSearch),\n"
-		"4 (TopologicalSort), 5 (PrintGraph)\n\n";
+		"4 (TopologicalSort), 5 (StronglyConnectedComponents), 6 (PrintGraph)\n\n";
 	Graph_t graph;
 	TopologicalList_t tlist;
 	GraphVertex_t* vertex;
@@ -85,17 +88,20 @@ int main(void)
 			PrintPath(&graph, vertex, graph.vertlist[i - DIFFERENCE]);
 			break;
 		case 3:
-			DepthFirstSearch(&graph, NULL);
+			DepthFirstSearch(&graph, NULL, NULL);
 			PrintDepthFirstTree(&graph);
 			break;
 		case 4:
-			TopologicalSort(&graph, &tlist);
+			TopologicalSort(&graph, &tlist, NULL);
 			PrintAdjacencyList(tlist.head);
 			putchar('\n');
 			FreeAdjacencyList(tlist.head);
 			tlist.head = NULL;
 			break;
 		case 5:
+			StronglyConnectedComponents(&graph);
+			break;
+		case 6:
 			PrintGraph(&graph);
 			break;
 		default:

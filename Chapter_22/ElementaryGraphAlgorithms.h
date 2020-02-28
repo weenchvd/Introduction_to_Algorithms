@@ -9,20 +9,27 @@
 #include <string.h>
 
 int CreateGraph(Graph_t* graph);
+GraphVertex_t* CreateVertex();
+AdjacencyList_t* CreateAdjacencySet();
 int IsVertexInAdjacencyList(AdjacencyList_t* adjset, GraphVertex_t* vertex);
 void BreadthFirstSearch(Graph_t* graph, GraphVertex_t* vertex);
-void DepthFirstSearch(Graph_t* graph, TopologicalList_t* tlist);
+void DepthFirstSearch(Graph_t* graph, TopologicalList_t* tlist, TopologicalList_t* order);
 void DepthFirstSearchVisit(Graph_t* graph, GraphVertex_t* vertex, TopologicalList_t* tlist);
 void Enqueue(Queue_t* q, GraphVertex_t* x);
 GraphVertex_t* Dequeue(Queue_t* q);
 inline int IsQueueEmpty(Queue_t* q);
 inline int IsQueueFull(Queue_t* q);
-void TopologicalSort(Graph_t* graph, TopologicalList_t* tlist);
+void TopologicalSort(Graph_t* graph, TopologicalList_t* tlist, TopologicalList_t* order);
+void StronglyConnectedComponents(Graph_t* graph);
+void TransposeGraph(Graph_t* graph);
+void PrintSCCVertices(TopologicalList_t* tlist);
 void PrintPath(Graph_t* graph, GraphVertex_t* source, GraphVertex_t* destination);
 void PrintGraph(Graph_t* graph);
 void PrintBreadthFirstTree(Graph_t* graph);
 void PrintDepthFirstTree(Graph_t* graph);
 void PrintVertex(GraphVertex_t* vertex);
 void PrintAdjacencyList(AdjacencyList_t* adjset);
+
+void FreeAdjacencyList(AdjacencyList_t* adjset);
 
 #endif
