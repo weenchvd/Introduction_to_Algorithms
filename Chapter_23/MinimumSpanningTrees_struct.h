@@ -17,7 +17,14 @@ typedef struct GraphVertex {
 	int distance;
 	int discovered;
 	int finished;
-	char color;
+	union {
+		int rank;
+		int key;
+	} u1;
+	union {
+		char color;
+		char mark;
+	} u2;
 } GraphVertex_t;
 
 typedef struct GraphEdge {
@@ -51,5 +58,17 @@ typedef struct HeapQueueSet {
 	struct GraphEdge_t* handle;
 	int priority;
 } HeapQueueSet_t;
+
+typedef struct HeapQueueV {
+	struct GraphVertex_t** handle;
+	int* priority;
+	int heapsize;
+	int heapsizelimit;
+} HeapQueueV_t;
+
+typedef struct HeapQueueVSet {
+	struct GraphVertex_t* handle;
+	int priority;
+} HeapQueueVSet_t;
 
 #endif

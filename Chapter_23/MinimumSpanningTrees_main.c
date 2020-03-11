@@ -1,4 +1,5 @@
 /* Chapter 23.1 | Minimum-Spanning-Trees */
+/* Chapter 23.2 | Minimum-Spanning-Trees */
 
 #include "MinimumSpanningTrees.h"
 #include "MinimumSpanningTrees.h"
@@ -10,14 +11,16 @@ void FreeAdjacencyList(AdjacencyList_t* adjset);
 
 int CreateGraph(Graph_t* graph);
 int GenericMST(Graph_t* graph, Queue_t* mst);
+int MSTKruskal(Graph_t* graph, Queue_t* mst);
+int MSTPrim(Graph_t* graph, GraphVertex_t* root, Queue_t* mst);
 void PrintGraph(Graph_t* graph);
 
 int main(void)
 {
 	int i, cond, action;
 	char* list = "\tList of actions: -1 (EXIT), 0 (List of actions),\n"
-		"1 (CreateGraph), 2 (GenericMST)\n"
-		"3 (PrintGraph)\n\n";
+		"1 (CreateGraph), 2 (GenericMST), 3 (MSTKruskal), 4 (MSTPrim)\n"
+		"5 (PrintGraph)\n\n";
 	Graph_t graph;
 	Queue_t mst;
 	GraphVertex_t* vertex;
@@ -52,6 +55,7 @@ int main(void)
 			break;
 		case 2:
 			if (graph.vertexnum == 0) {
+				printf("\n\t| ERROR | Graph does not exist |\n\n");
 				break;
 			}
 			if (GenericMST(&graph, &mst) == FAILURE) {
@@ -59,6 +63,24 @@ int main(void)
 			}
 			break;
 		case 3:
+			if (graph.vertexnum == 0) {
+				printf("\n\t| ERROR | Graph does not exist |\n\n");
+				break;
+			}
+			if (MSTKruskal(&graph, &mst) == FAILURE) {
+				cond = FALSE;
+			}
+			break;
+		case 4:
+			if (graph.vertexnum == 0) {
+				printf("\n\t| ERROR | Graph does not exist |\n\n");
+				break;
+			}
+			if (MSTPrim(&graph, graph.vertlist[0], &mst) == FAILURE) {
+				cond = FALSE;
+			}
+			break;
+		case 5:
 			PrintGraph(&graph);
 			break;
 		default:
