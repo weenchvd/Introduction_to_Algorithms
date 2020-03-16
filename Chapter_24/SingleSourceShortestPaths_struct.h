@@ -40,6 +40,10 @@ typedef struct AdjacencyList {
 	int weight;
 } AdjacencyList_t;
 
+typedef struct TopologicalList {
+	struct AdjacencyList* head;
+} TopologicalList_t;
+
 /*typedef struct Queue {
 	struct GraphEdge** queue;
 	unsigned int size;

@@ -333,3 +333,83 @@ bool BellmanFord(Graph_t* graph, GraphVertex_t* source)
 	}
 	return true;
 }
+
+void DAGShortestPaths(Graph_t* graph, GraphVertex_t* source)
+{
+	TopologicalList_t tlist;
+	tlist.head = NULL;
+	AdjacencyList_t* adjset, * adjset2;
+	TopologicalSort(graph, &tlist, NULL);
+	InitializeSingleSource(graph, source);
+	for (adjset = tlist.head; adjset != NULL; adjset = adjset->next) {
+		for (adjset2 = graph->adjlist[adjset->vertex->number - DIFFERENCE]; adjset2 != NULL; adjset2 = adjset2->next) {
+			Relax(adjset->vertex, adjset2->vertex, adjset2->weight);
+		}
+	}
+	FreeAdjacencyList(tlist.head);
+	return;
+}
+
+unsigned int time;
+
+void DepthFirstSearch(Graph_t* graph, TopologicalList_t* tlist, TopologicalList_t* order)
+{
+	int i;
+	for (i = 0; i < graph->vertexnum; i++) {
+		graph->vertlist[i]->u2.color = WHITE;
+		graph->vertlist[i]->parent = NULL;
+	}
+	time = 0;
+	if (order != NULL) {
+		AdjacencyList_t* adjset;
+		adjset = order->head;
+		while (adjset != NULL) {
+			if (adjset->vertex->u2.color == WHITE) {
+				DepthFirstSearchVisit(graph, adjset->vertex, tlist);
+			}
+			adjset = adjset->next;
+		}
+	}
+	else {
+		for (i = 0; i < graph->vertexnum; i++) {
+			if (graph->vertlist[i]->u2.color == WHITE) {
+				DepthFirstSearchVisit(graph, graph->vertlist[i], tlist);
+			}
+		}
+	}
+	return;
+}
+
+void DepthFirstSearchVisit(Graph_t* graph, GraphVertex_t* vertex, TopologicalList_t* tlist)
+{
+	AdjacencyList_t* adjset;
+	vertex->discovered = ++time;
+	vertex->u2.color = GRAY;
+	adjset = graph->adjlist[vertex->number - DIFFERENCE];
+	while (adjset != NULL) {
+		if (adjset->vertex->u2.color == WHITE) {
+			adjset->vertex->parent = vertex;
+			DepthFirstSearchVisit(graph, adjset->vertex, tlist);
+		}
+		adjset = adjset->next;
+	}
+	vertex->u2.color = BLACK;
+	vertex->finished = ++time;
+	if (tlist != NULL) {
+		AdjacencyList_t* adjset2;
+		if ((adjset2 = CreateAdjacencySet()) == NULL) {
+			return;
+		}
+		adjset2->vertex = vertex;
+		adjset2->weight = INT_MIN;
+		adjset2->next = tlist->head;
+		tlist->head = adjset2;
+	}
+	return;
+}
+
+void TopologicalSort(Graph_t* graph, TopologicalList_t* tlist, TopologicalList_t* order)
+{
+	DepthFirstSearch(graph, tlist, order);
+	return;
+}

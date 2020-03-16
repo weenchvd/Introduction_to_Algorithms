@@ -1,4 +1,5 @@
 /* Chapter 24.1 | Single-Source-Shortest-Paths */
+/* Chapter 24.2 | Single-Source-Shortest-Paths */
 
 #include "SingleSourceShortestPaths_common.h"
 #include "SingleSourceShortestPaths_struct.h"
@@ -13,12 +14,13 @@ int CreateGraph(Graph_t* graph);
 void PrintPath(Graph_t* graph, GraphVertex_t* source, GraphVertex_t* destination);
 void PrintGraph(Graph_t* graph);
 bool BellmanFord(Graph_t* graph, GraphVertex_t* source);
+void DAGShortestPaths(Graph_t* graph, GraphVertex_t* source);
 
 int main(void)
 {
 	int i, cond, action;
 	char* list = "\tList of actions: -1 (EXIT), 0 (List of actions),\n"
-		"1 (CreateGraph), 2 (BellmanFord), 3 (), 4 ()\n"
+		"1 (CreateGraph), 2 (BellmanFord), 3 (DAGShortestPaths), 4 ()\n"
 		"5 (PrintGraph)\n\n";
 	Graph_t graph;
 	GraphVertex_t* vertex;
@@ -83,6 +85,26 @@ int main(void)
 			if (graph.vertexnum == 0) {
 				printf("\n\t| ERROR | Graph does not exist |\n\n");
 				break;
+			}
+			if (graph.type != DIRECTED) {
+				printf("\n\t| ERROR | Graph must be directed |\n\n");
+				break;
+			}
+			printf("Please enter the vertex number: ");
+			if (scanf("%d", &i) <= 0) {
+				printf("\n\t| ERROR | Incorrect input |\n\n");
+				break;
+			}
+			if (i < 1 || i > graph.vertexnum) {
+				printf("\n\t| ERROR | The number must be from 1 to %d |\n\n", graph.vertexnum);
+				break;
+			}
+			vertex = graph.vertlist[i - DIFFERENCE];
+			DAGShortestPaths(&graph, vertex);
+			for (i = 0; i < graph.vertexnum; i++) {
+				printf("The path from vertex #%d to vertex #%d with the weight %d:\n",
+					vertex->number, graph.vertlist[i]->number, graph.vertlist[i]->distance);
+				PrintPath(&graph, vertex, graph.vertlist[i]);
 			}
 			break;
 		case 4:

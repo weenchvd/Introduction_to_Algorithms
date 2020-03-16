@@ -24,6 +24,10 @@ void InitializeSingleSource(Graph_t* graph, GraphVertex_t* source);
 void Relax(GraphVertex_t* source, GraphVertex_t* destination, int edgeweight);
 int WeightSummarization(int weight1, int weight2);
 bool BellmanFord(Graph_t* graph, GraphVertex_t* source);
+void DAGShortestPaths(Graph_t* graph, GraphVertex_t* source);
+void DepthFirstSearch(Graph_t* graph, TopologicalList_t* tlist, TopologicalList_t* order);
+void DepthFirstSearchVisit(Graph_t* graph, GraphVertex_t* vertex, TopologicalList_t* tlist);
+void TopologicalSort(Graph_t* graph, TopologicalList_t* tlist, TopologicalList_t* order);
 
 void FreeAdjacencyList(AdjacencyList_t* adjset);
 
