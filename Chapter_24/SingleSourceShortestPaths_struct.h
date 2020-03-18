@@ -21,6 +21,7 @@ typedef struct GraphVertex {
 	union {
 		int rank;
 		int key;
+		int index;
 	} u1;
 	union {
 		char color;
@@ -44,11 +45,23 @@ typedef struct TopologicalList {
 	struct AdjacencyList* head;
 } TopologicalList_t;
 
-/*typedef struct Queue {
-	struct GraphEdge** queue;
+typedef struct Queue {
+	struct GraphVertex** queue;
 	unsigned int size;
 	unsigned int head;
 	unsigned int tail;
-} Queue_t;*/
+} Queue_t;
+
+typedef struct HeapQueue {
+	struct GraphVertex** handle;
+	int* priority;
+	int heapsize;
+	int heapsizelimit;
+} HeapQueue_t;
+
+typedef struct HeapQueueSet {
+	struct GraphVertex* handle;
+	int priority;
+} HeapQueueSet_t;
 
 #endif

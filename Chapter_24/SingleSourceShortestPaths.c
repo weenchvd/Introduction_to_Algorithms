@@ -350,6 +350,48 @@ void DAGShortestPaths(Graph_t* graph, GraphVertex_t* source)
 	return;
 }
 
+void Dijkstra(Graph_t* graph, GraphVertex_t* source)
+{
+	int i, distance;
+	GraphVertex_t* vertex;
+	AdjacencyList_t* adjset;
+	HeapQueue_t* vertices;
+	Queue_t spwvertices;
+	HeapQueueSet_t set;
+	spwvertices.head = spwvertices.tail = 0;
+	spwvertices.size = graph->vertexnum + 1;
+	if ((spwvertices.queue = malloc(sizeof(GraphVertex_t*) * spwvertices.size)) == NULL) {
+		printf("\n\t| ERROR | Memory allocator error. No memory allocated |\n\n");
+		return;
+	}
+	if ((vertices = CreateHeapQueue(graph->vertexnum)) == NULL) {
+		return;
+	}
+	InitializeSingleSource(graph, source);
+	for (i = 0; i < graph->vertexnum; i++) {
+		graph->vertlist[i]->u2.mark = true;
+		MinHeapInsert(vertices, graph->vertlist[i]);
+	}
+	while (vertices->heapsize > 1) {
+		HeapExtractMin(vertices, &set);
+		vertex = set.handle;
+		vertex->u2.mark = false;
+		Enqueue(&spwvertices, vertex);
+		for (adjset = graph->adjlist[vertex->number - DIFFERENCE]; adjset != NULL; adjset = adjset->next) {
+			distance = adjset->vertex->distance;
+			Relax(vertex, adjset->vertex, adjset->weight);
+			if (adjset->vertex->u2.mark == true && distance != adjset->vertex->distance) {
+				HeapDecreaseKey(vertices, adjset->vertex->u1.index, adjset->vertex->distance);
+			}
+		}
+	}
+	HeapExtractMin(vertices, &set);
+	Enqueue(&spwvertices, set.handle);
+	FreeHeapQueue(vertices);
+	free(spwvertices.queue);
+	return;
+}
+
 unsigned int time;
 
 void DepthFirstSearch(Graph_t* graph, TopologicalList_t* tlist, TopologicalList_t* order)
@@ -411,5 +453,195 @@ void DepthFirstSearchVisit(Graph_t* graph, GraphVertex_t* vertex, TopologicalLis
 void TopologicalSort(Graph_t* graph, TopologicalList_t* tlist, TopologicalList_t* order)
 {
 	DepthFirstSearch(graph, tlist, order);
+	return;
+}
+
+void Enqueue(Queue_t* q, GraphVertex_t* x)
+{
+	if (IsQueueFull(q) == TRUE) {
+		printf("\n\t| ERROR | Queue overflow |\n\n");
+	}
+	else {
+		q->queue[q->tail] = x;
+		q->tail = (q->tail == q->size - 1) ? ARRAYSTARTINDEX : q->tail + 1;
+	}
+	return;
+}
+
+GraphVertex_t* Dequeue(Queue_t* q)
+{
+	GraphVertex_t* x;
+	if (IsQueueEmpty(q) == TRUE) {
+		printf("\n\t| ERROR | Queue underflow |\n\n");
+		return NULL;
+	}
+	x = q->queue[q->head];
+	q->head = (q->head == q->size - 1) ? ARRAYSTARTINDEX : q->head + 1;
+	return x;
+}
+
+inline int IsQueueEmpty(Queue_t* q)
+{
+	return (q->head == q->tail) ? TRUE : FALSE;
+}
+
+inline int IsQueueFull(Queue_t* q)
+{
+	return (q->head == ((q->tail + 1 == q->size) ? ARRAYSTARTINDEX : q->tail + 1)) ? TRUE : FALSE;
+}
+
+HeapQueue_t* CreateHeapQueue(int heapsizelimit)
+{
+	HeapQueue_t* queue;
+	if ((queue = malloc(sizeof(HeapQueue_t))) == NULL) {
+		printf("\n\t| ERROR | Memory allocator error. No memory allocated |\n\n");
+		return NULL;
+	}
+	if (InitializeHeap(queue, heapsizelimit) == FAILURE) {
+		free(queue);
+		return NULL;
+	}
+	return queue;
+}
+
+int InitializeHeap(HeapQueue_t* queue, int heapsizelimit)
+{
+	queue->heapsize = 0;
+	queue->heapsizelimit = heapsizelimit;
+	if ((queue->handle = malloc(sizeof(GraphVertex_t*) * (queue->heapsizelimit + HEAPSTARTINDEX))) == NULL) {
+		printf("\n\t| ERROR | Memory allocator error. No memory allocated |\n\n");
+		return FAILURE;
+	}
+	if ((queue->priority = malloc(sizeof(int) * (queue->heapsizelimit + HEAPSTARTINDEX))) == NULL) {
+		printf("\n\t| ERROR | Memory allocator error. No memory allocated |\n\n");
+		return FAILURE;
+	}
+	return SUCCESS;
+}
+
+HeapQueueSet_t* HeapMin(HeapQueue_t* queue, HeapQueueSet_t* set)
+{
+	if (queue->heapsize < 1) {
+		printf("\n\t| ERROR | Heap underflow |\n\n");
+		return NULL;
+	}
+	set->priority = HEAPMINIMUM(queue->priority);
+	set->handle = HEAPMINIMUM(queue->handle);
+	return set;
+}
+
+HeapQueueSet_t* HeapExtractMin(HeapQueue_t* queue, HeapQueueSet_t* set)
+{
+	if (queue->heapsize < 1) {
+		printf("\n\t| ERROR | Heap underflow |\n\n");
+		return NULL;
+	}
+	set->priority = queue->priority[HEAPSTARTINDEX];
+	set->handle = queue->handle[HEAPSTARTINDEX];
+	queue->priority[HEAPSTARTINDEX] = queue->priority[queue->heapsize];
+	queue->handle[HEAPSTARTINDEX] = queue->handle[queue->heapsize--];
+	queue->handle[HEAPSTARTINDEX]->u1.index = HEAPSTARTINDEX;
+	MinHeapify(queue, HEAPSTARTINDEX);
+	return set;
+}
+
+void HeapDecreaseKey(HeapQueue_t* queue, int index, int newpriority)
+{
+	int parent;
+	GraphVertex_t* handle;
+	if (index > queue->heapsize) {
+		printf("\n\t| ERROR | Index is greater than heap size |\n\n");
+		return;
+	}
+	if (index < HEAPSTARTINDEX) {
+		printf("\n\t| ERROR | Index is less than %d |\n\n", HEAPSTARTINDEX);
+		return;
+	}
+	if (newpriority > queue->priority[index]) {
+		printf("\n\t| ERROR | New priority is bigger than current priority |\n\n");
+		return;
+	}
+	handle = queue->handle[index];
+	while (index > 1 && queue->priority[parent = PARENT(index)] > newpriority) {
+		queue->priority[index] = queue->priority[parent];
+		queue->handle[index] = queue->handle[parent];
+		queue->handle[index]->u1.index = index;
+		index = parent;
+	}
+	queue->priority[index] = newpriority;
+	queue->handle[index] = handle;
+	queue->handle[index]->u1.index = index;
+	return;
+}
+
+void MinHeapInsert(HeapQueue_t* queue, GraphVertex_t* handle)
+{
+	if (queue->heapsize >= queue->heapsizelimit) {
+		printf("\n\t| ERROR | Heap size limit reached |\n\n");
+		return;
+	}
+	queue->priority[++queue->heapsize] = INT_MAX;
+	queue->handle[queue->heapsize] = handle;
+	HeapDecreaseKey(queue, queue->heapsize, handle->distance);
+	return;
+}
+
+void MinHeapDelete(HeapQueue_t* queue, int index)
+{
+	if (index > queue->heapsize) {
+		printf("\n\t| ERROR | Index is greater than heap size |\n\n");
+		return;
+	}
+	if (index < HEAPSTARTINDEX) {
+		printf("\n\t| ERROR | Index is less than %d |\n\n", HEAPSTARTINDEX);
+		return;
+	}
+	queue->priority[index] = queue->priority[queue->heapsize];
+	queue->handle[index] = queue->handle[queue->heapsize--];
+	queue->handle[index]->u1.index = index;
+	MinHeapify(queue, index);
+	return;
+}
+
+void MinHeapify(HeapQueue_t* queue, int index)
+{
+	int left, right, smallest;
+	HeapQueueSet_t tmp;
+	while (TRUE)
+	{
+		left = LEFT(index);
+		right = RIGHT(index);
+		if (left <= queue->heapsize && queue->priority[left] < queue->priority[index]) {
+			smallest = left;
+		}
+		else {
+			smallest = index;
+		}
+		if (right <= queue->heapsize && queue->priority[right] < queue->priority[smallest]) {
+			smallest = right;
+		}
+		if (smallest != index) {
+			tmp.priority = queue->priority[index];
+			tmp.handle = queue->handle[index];
+			queue->priority[index] = queue->priority[smallest];
+			queue->handle[index] = queue->handle[smallest];
+			queue->handle[index]->u1.index = index;
+			queue->priority[smallest] = tmp.priority;
+			queue->handle[smallest] = tmp.handle;
+			queue->handle[smallest]->u1.index = smallest;
+			index = smallest;
+		}
+		else {
+			break;
+		}
+	}
+	return;
+}
+
+void FreeHeapQueue(HeapQueue_t* queue)
+{
+	free(queue->handle);
+	free(queue->priority);
+	free(queue);
 	return;
 }
