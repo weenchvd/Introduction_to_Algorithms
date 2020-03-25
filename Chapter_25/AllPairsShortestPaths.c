@@ -218,8 +218,8 @@ void PrintAllPairsShortestPath(AdjacencyMatrix_t* predSubgraph, int i, int j)
 	if (i == j) {
 		printf("%d ", i);
 	}
-	else if (predSubgraph->weight[item(i, j, predSubgraph->rows)] == INFINITY) {
-		printf("  No path from vertex #%d to vertex #%d exists\n", i, j);
+	else if (predSubgraph->weight[item(i, j, predSubgraph->rows)] == NIL) {
+		printf("  No path from vertex #%d to vertex #%d exists", i, j);
 	}
 	else {
 		PrintAllPairsShortestPath(predSubgraph, i, predSubgraph->weight[item(i, j, predSubgraph->rows)]);
@@ -379,22 +379,71 @@ AdjacencyMatrix_t* ExtendShortestPaths(AdjacencyMatrix_t* shortestPath, Adjacenc
 	return newShortestPath;
 }
 
-AdjacencyMatrix_t* SlowAllPairsShortestPaths(const AdjacencyMatrix_t* edgeWeight)
+AdjPredSet_t* ExtendShortestPathsAndPredecessorSubgraph(AdjPredSet_t* adjpred, AdjacencyMatrix_t* edgeWeight)
 {
-	int i, n;
-	AdjacencyMatrix_t* shortestPath, *newShortestPath;
+	int i, j, k, n, currentWeight, newWeight;
+	AdjacencyMatrix_t* shortestPath, * newShortestPath, * predSubgraph;
+	shortestPath = adjpred->shortestPath;
+	predSubgraph = adjpred->predSubgraph;
+	n = shortestPath->rows;
+	if ((newShortestPath = CreateAdjacencyMatrix(n)) == NULL) {
+		return NULL;
+	}
+	for (i = 1; i <= n; i++) {
+		for (j = 1; j <= n; j++) {
+			newShortestPath->weight[item(i, j, n)] = INFINITY;
+			predSubgraph->weight[item(i, j, n)] = NIL;
+			for (k = 1; k <= n; k++) {
+				currentWeight = newShortestPath->weight[item(i, j, n)];
+				newWeight = WeightSummarization(shortestPath->weight[item(i, k, n)], edgeWeight->weight[item(k, j, n)]);
+				if (newWeight < currentWeight) {
+					newShortestPath->weight[item(i, j, n)] = newWeight;
+				}
+				if (newWeight <= currentWeight && k != j) {
+					predSubgraph->weight[item(i, j, n)] = k;
+				}
+			}
+		}
+	}
+	adjpred->shortestPath = newShortestPath;
+	return adjpred;
+}
+
+AdjPredSet_t* SlowAllPairsShortestPaths(const AdjacencyMatrix_t* edgeWeight)
+{
+	int i, j, k, n;
+	AdjacencyMatrix_t* shortestPath, * predSubgraph;
+	AdjPredSet_t* adjpred;
+	if ((adjpred = malloc(sizeof(AdjPredSet_t))) == NULL) {
+		printf("\n\t| ERROR | Memory allocator error. No memory allocated |\n\n");
+		return NULL;
+	}
 	n = edgeWeight->rows;
 	if ((shortestPath = MakeCopyAdjacencyMatrix(edgeWeight)) == NULL) {
 		return NULL;
 	}
+	if ((predSubgraph = CreateAdjacencyMatrix(n)) == NULL) {
+		return NULL;
+	}
+	adjpred->shortestPath = shortestPath;
+	adjpred->predSubgraph = predSubgraph;
 	for (i = 2; i < n; i++) {
-		if ((newShortestPath = ExtendShortestPaths(shortestPath, edgeWeight)) == NULL) {
+		shortestPath = adjpred->shortestPath;
+		if ((adjpred = ExtendShortestPathsAndPredecessorSubgraph(adjpred, edgeWeight)) == NULL) {
 			return NULL;
 		}
 		FreeAdjacencyMatrix(shortestPath);
-		shortestPath = newShortestPath;
 	}
-	return shortestPath;
+	for (i = 1; i <= n; i++) {
+		for (j = 1; j <= n; j++) {
+			for (k = 1; k <= n; k++) {
+				if (adjpred->shortestPath->weight[item(i, j, n)] == INFINITY) {
+					adjpred->predSubgraph->weight[item(i, j, n)] = NIL;
+				}
+			}
+		}
+	}
+	return adjpred;
 }
 
 AdjacencyMatrix_t* FasterAllPairsShortestPaths(const AdjacencyMatrix_t* edgeWeight)

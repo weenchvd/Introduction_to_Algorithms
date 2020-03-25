@@ -50,7 +50,12 @@ typedef struct AdjacencyMatrix {
 	int rows;
 } AdjacencyMatrix_t;
 
-typedef struct TopologicalList {
+typedef struct AdjacencyAndPredecessorMatrices {
+	struct AdjacencyMatrix* shortestPath;
+	struct AdjacencyMatrix* predSubgraph;
+} AdjPredSet_t;
+
+/*typedef struct TopologicalList {
 	struct AdjacencyList* head;
 } TopologicalList_t;
 
@@ -71,6 +76,6 @@ typedef struct HeapQueue {
 typedef struct HeapQueueSet {
 	struct GraphVertex* handle;
 	int priority;
-} HeapQueueSet_t;
+} HeapQueueSet_t;*/
 
 #endif

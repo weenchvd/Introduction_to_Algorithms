@@ -1,10 +1,13 @@
 /* Chapter 25.1 | All-Pairs-Shortest-Paths */
+/* Exercise 25.1-7 | All-Pairs-Shortest-Paths */
 
 #include "AllPairsShortestPaths_common.h"
 #include "AllPairsShortestPaths_struct.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
+
+#define INFINITY INT_MAX
 
 void FreeGraph(Graph_t* graph);
 void FreeAdjacencyList(AdjacencyList_t* adjset);
@@ -13,19 +16,21 @@ int CreateGraph(Graph_t* graph);
 void PrintPath(Graph_t* graph, GraphVertex_t* source, GraphVertex_t* destination);
 void PrintAllPairsShortestPath(AdjacencyMatrix_t* predSubgraph, int i, int j);
 void PrintGraph(Graph_t* graph);
-AdjacencyMatrix_t* SlowAllPairsShortestPaths(const AdjacencyMatrix_t* edgeWeight);
+void FreeAdjacencyMatrix(AdjacencyMatrix_t* adjmatrix);
+AdjPredSet_t* SlowAllPairsShortestPaths(const AdjacencyMatrix_t* edgeWeight);
 AdjacencyMatrix_t* FasterAllPairsShortestPaths(const AdjacencyMatrix_t* edgeWeight);
 
 
 int main(void)
 {
-	int i, j, cond, action;
+	int i, j, n, cond, action;
 	char* list = "\tList of actions: -1 (EXIT), 0 (List of actions),\n"
 		"1 (CreateGraph), 2 (SlowAllPairsShortestPaths), 3 (FasterAllPairsShortestPaths), 4 ()\n"
 		"5 (PrintGraph)\n\n";
 	Graph_t graph;
 	GraphVertex_t* vertex;
 	AdjacencyMatrix_t* shortestPath;
+	AdjPredSet_t* adjpred;
 	printf(list);
 	graph.vertexnum = graph.edgenum = graph.type = 0;
 	graph.adjlist = graph.vertlist = graph.edgelist = graph.adjmatrix = NULL;
@@ -65,15 +70,26 @@ int main(void)
 				printf("\n\t| ERROR | Graph does not exist |\n\n");
 				break;
 			}
-			if ((shortestPath = SlowAllPairsShortestPaths(graph.adjmatrix)) == NULL) {
+			if ((adjpred = SlowAllPairsShortestPaths(graph.adjmatrix)) == NULL) {
 				break;
 			}
+			n = adjpred->shortestPath->rows;
 			for (i = 1; i <= graph.vertexnum; i++) {
 				for (j = 1; j <= graph.vertexnum; j++) {
-					printf("  The path from vertex #%d to vertex #%d with the weight %d\n",
-						i, j, shortestPath->weight[item(i, j, shortestPath->rows)]);
+					if (adjpred->shortestPath->weight[item(i, j, n)] != INFINITY) {
+						printf("  The path from vertex #%d to vertex #%d with the weight %d: ",
+							i, j, adjpred->shortestPath->weight[item(i, j, n)]);
+					}
+					else {
+						printf("  The path from vertex #%d to vertex #%d with the weight \'INFINITY\': ", i, j);
+					}
+					PrintAllPairsShortestPath(adjpred->predSubgraph, i, j);
+					putchar('\n');
 				}
 			}
+			free(adjpred->shortestPath);
+			free(adjpred->predSubgraph);
+			free(adjpred);
 			break;
 		case 3:
 			if (graph.vertexnum == 0) {
@@ -89,6 +105,7 @@ int main(void)
 						i, j, shortestPath->weight[item(i, j, shortestPath->rows)]);
 				}
 			}
+			free(shortestPath);
 			break;
 		case 4:
 			if (graph.vertexnum == 0) {

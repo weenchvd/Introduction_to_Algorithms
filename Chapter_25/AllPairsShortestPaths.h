@@ -11,6 +11,7 @@
 
 #define INFINITY INT_MAX
 #define INFINITYMINUS INT_MIN
+#define NIL 0
 
 
 int CreateGraph(Graph_t* graph);
@@ -27,7 +28,8 @@ AdjacencyMatrix_t* CreateAdjacencyMatrix(const int rows);
 AdjacencyMatrix_t* MakeCopyAdjacencyMatrix(const AdjacencyMatrix_t* source);
 void FreeAdjacencyMatrix(AdjacencyMatrix_t* adjmatrix);
 AdjacencyMatrix_t* ExtendShortestPaths(AdjacencyMatrix_t* shortestPath, AdjacencyMatrix_t* edgeWeight);
-AdjacencyMatrix_t* SlowAllPairsShortestPaths(const AdjacencyMatrix_t* edgeWeight);
+AdjPredSet_t* ExtendShortestPathsAndPredecessorSubgraph(AdjPredSet_t* adjpred, AdjacencyMatrix_t* edgeWeight);
+AdjPredSet_t* SlowAllPairsShortestPaths(const AdjacencyMatrix_t* edgeWeight);
 AdjacencyMatrix_t* FasterAllPairsShortestPaths(const AdjacencyMatrix_t* edgeWeight);
 
 
