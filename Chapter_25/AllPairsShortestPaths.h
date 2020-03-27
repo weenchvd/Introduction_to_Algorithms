@@ -1,17 +1,13 @@
 ﻿#ifndef _ALLPAIRSSHORTESTPATHS_H
 #define _ALLPAIRSSHORTESTPATHS_H
 
-#include "AllPairsShortestPaths_common.h"
-#include "AllPairsShortestPaths_struct.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
 #include <string.h>
 #include <stdbool.h>
-
-#define INFINITY INT_MAX
-#define INFINITYMINUS INT_MIN
-#define NIL 0
+#include "AllPairsShortestPaths_common.h"
+#include "AllPairsShortestPaths_struct.h"
 
 
 int CreateGraph(Graph_t* graph);
@@ -31,6 +27,12 @@ AdjacencyMatrix_t* ExtendShortestPaths(AdjacencyMatrix_t* shortestPath, Adjacenc
 AdjPredSet_t* ExtendShortestPathsAndPredecessorSubgraph(AdjPredSet_t* adjpred, AdjacencyMatrix_t* edgeWeight);
 AdjPredSet_t* SlowAllPairsShortestPaths(const AdjacencyMatrix_t* edgeWeight);
 AdjacencyMatrix_t* FasterAllPairsShortestPaths(const AdjacencyMatrix_t* edgeWeight);
+AdjacencyMatrix_t* FloydWarshall(const AdjacencyMatrix_t* edgeWeight);
+void SetBitValueInTransitiveClosureMatrix(TClosure_t* clos, int i, int j, int value);
+bool GetBitValueInTransitiveClosureMatrix(TClosure_t* clos, int i, int j);
+TClosure_t* TransitiveClosure(AdjacencyMatrix_t* edgeWeight);
+TClosure_t* CreateTransitiveClosureMatrix(const int rows);
+void FreeTransitiveClosureMatrix(TClosure_t* clos);
 
 
 void FreeAdjacencyList(AdjacencyList_t* adjset);

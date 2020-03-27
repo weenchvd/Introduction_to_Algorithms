@@ -469,3 +469,106 @@ AdjacencyMatrix_t* FasterAllPairsShortestPaths(const AdjacencyMatrix_t* edgeWeig
 	}
 	return shortestPath;
 }
+
+AdjacencyMatrix_t* FloydWarshall(const AdjacencyMatrix_t* edgeWeight)
+{
+	int i, j, k, n, currentWeight, newWeight;
+	AdjacencyMatrix_t* shortestPath, * newShortestPath;
+	n = edgeWeight->rows;
+	if ((shortestPath = MakeCopyAdjacencyMatrix(edgeWeight)) == NULL) {
+		return NULL;
+	}
+	for (k = 1; k <= n; k++) {
+		if ((newShortestPath = CreateAdjacencyMatrix(n)) == NULL) {
+			return NULL;
+		}
+		for (i = 1; i <= n; i++) {
+			for (j = 1; j <= n; j++) {
+				currentWeight = shortestPath->weight[item(i, j, n)];
+				newWeight = WeightSummarization(shortestPath->weight[item(i, k, n)], shortestPath->weight[item(k, j, n)]);
+				newShortestPath->weight[item(i, j, n)] = (newWeight < currentWeight) ? newWeight : currentWeight;
+			}
+		}
+		FreeAdjacencyMatrix(shortestPath);
+		shortestPath = newShortestPath;
+	}
+	return shortestPath;
+}
+
+void SetBitValueInTransitiveClosureMatrix(TClosure_t* clos, int i, int j, int value)
+{
+	int itemNumber, byteNumber, leftShift;
+	itemNumber = item(i, j, clos->rows) + 1;
+	byteNumber = ((itemNumber % CHAR_BIT > 0) ? itemNumber / CHAR_BIT + 1 : itemNumber / CHAR_BIT) - 1;
+	leftShift = (itemNumber - 1) % CHAR_BIT;
+	clos->key[byteNumber] = (value == true) ? (clos->key[byteNumber] | 1 << leftShift) : (clos->key[byteNumber] & ~(1 << leftShift));
+	return;
+}
+
+bool GetBitValueInTransitiveClosureMatrix(TClosure_t* clos, int i, int j)
+{
+	int itemNumber, byteNumber, leftShift;
+	itemNumber = item(i, j, clos->rows) + 1;
+	byteNumber = ((itemNumber % CHAR_BIT > 0) ? itemNumber / CHAR_BIT + 1 : itemNumber / CHAR_BIT) - 1;
+	leftShift = (itemNumber - 1) % CHAR_BIT;
+	return clos->key[byteNumber] & 1 << leftShift;
+}
+
+TClosure_t* TransitiveClosure(AdjacencyMatrix_t* edgeWeight)
+{
+	char currentValue, newValue;
+	int i, j, k, n;
+	TClosure_t* clos, * newClos;
+	n = edgeWeight->rows;
+	if ((clos = CreateTransitiveClosureMatrix(n)) == NULL) {
+		return NULL;
+	}
+	for (i = 1; i <= n; i++) {
+		for (j = 1; j <= n; j++) {
+			if (i == j || edgeWeight->weight[item(i, j, n)] < INFINITY) {
+				SetBitValueInTransitiveClosureMatrix(clos, i, j, true);
+			}
+			else {
+				SetBitValueInTransitiveClosureMatrix(clos, i, j, false);
+			}
+		}
+	}
+	for (k = 1; k <= n; k++) {
+		if ((newClos = CreateTransitiveClosureMatrix(n)) == NULL) {
+			return NULL;
+		}
+		for (i = 1; i <= n; i++) {
+			for (j = 1; j <= n; j++) {
+				currentValue = GetBitValueInTransitiveClosureMatrix(clos, i, j);
+				newValue = GetBitValueInTransitiveClosureMatrix(clos, i, k) & GetBitValueInTransitiveClosureMatrix(clos, k, j);
+				SetBitValueInTransitiveClosureMatrix(newClos, i, j, currentValue | newValue);
+			}
+		}
+		FreeTransitiveClosureMatrix(clos);
+		clos = newClos;
+	}
+	return clos;
+}
+
+TClosure_t* CreateTransitiveClosureMatrix(const int rows)
+{
+	TClosure_t* clos;
+	if ((clos = malloc(sizeof(TClosure_t))) == NULL) {
+		printf("\n\t| ERROR | Memory allocator error. No memory allocated |\n\n");
+		return NULL;
+	}
+	if ((clos->key = malloc(sizeof(char) * GetClosureSizeInBytes(rows))) == NULL) {
+		printf("\n\t| ERROR | Memory allocator error. No memory allocated |\n\n");
+		free(clos);
+		return NULL;
+	}
+	clos->rows = rows;
+	return clos;
+}
+
+void FreeTransitiveClosureMatrix(TClosure_t* clos)
+{
+	free(clos->key);
+	free(clos);
+	return;
+}

@@ -1,13 +1,13 @@
 /* Chapter 25.1 | All-Pairs-Shortest-Paths */
 /* Exercise 25.1-7 | All-Pairs-Shortest-Paths */
+/* Chapter 25.2 | All-Pairs-Shortest-Paths */
 
-#include "AllPairsShortestPaths_common.h"
-#include "AllPairsShortestPaths_struct.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include "AllPairsShortestPaths_common.h"
+#include "AllPairsShortestPaths_struct.h"
 
-#define INFINITY INT_MAX
 
 void FreeGraph(Graph_t* graph);
 void FreeAdjacencyList(AdjacencyList_t* adjset);
@@ -19,18 +19,24 @@ void PrintGraph(Graph_t* graph);
 void FreeAdjacencyMatrix(AdjacencyMatrix_t* adjmatrix);
 AdjPredSet_t* SlowAllPairsShortestPaths(const AdjacencyMatrix_t* edgeWeight);
 AdjacencyMatrix_t* FasterAllPairsShortestPaths(const AdjacencyMatrix_t* edgeWeight);
+AdjacencyMatrix_t* FloydWarshall(const AdjacencyMatrix_t* edgeWeight);
+bool GetBitValueInTransitiveClosureMatrix(TClosure_t* clos, int i, int j);
+TClosure_t* TransitiveClosure(AdjacencyMatrix_t* edgeWeight);
+void FreeTransitiveClosureMatrix(TClosure_t* clos);
+
 
 
 int main(void)
 {
 	int i, j, n, cond, action;
 	char* list = "\tList of actions: -1 (EXIT), 0 (List of actions),\n"
-		"1 (CreateGraph), 2 (SlowAllPairsShortestPaths), 3 (FasterAllPairsShortestPaths), 4 ()\n"
-		"5 (PrintGraph)\n\n";
+		"1 (CreateGraph), 2 (SlowAllPairsShortestPaths), 3 (FasterAllPairsShortestPaths), 4 (FloydWarshall)\n"
+		"5 (TransitiveClosure), 6 (PrintGraph)\n\n";
 	Graph_t graph;
 	GraphVertex_t* vertex;
 	AdjacencyMatrix_t* shortestPath;
 	AdjPredSet_t* adjpred;
+	TClosure_t* clos;
 	printf(list);
 	graph.vertexnum = graph.edgenum = graph.type = 0;
 	graph.adjlist = graph.vertlist = graph.edgelist = graph.adjmatrix = NULL;
@@ -87,8 +93,8 @@ int main(void)
 					putchar('\n');
 				}
 			}
-			free(adjpred->shortestPath);
-			free(adjpred->predSubgraph);
+			FreeAdjacencyMatrix(adjpred->shortestPath);
+			FreeAdjacencyMatrix(adjpred->predSubgraph);
 			free(adjpred);
 			break;
 		case 3:
@@ -105,15 +111,46 @@ int main(void)
 						i, j, shortestPath->weight[item(i, j, shortestPath->rows)]);
 				}
 			}
-			free(shortestPath);
+			FreeAdjacencyMatrix(shortestPath);
 			break;
 		case 4:
 			if (graph.vertexnum == 0) {
 				printf("\n\t| ERROR | Graph does not exist |\n\n");
 				break;
 			}
+			if ((shortestPath = FloydWarshall(graph.adjmatrix)) == NULL) {
+				break;
+			}
+			for (i = 1; i <= graph.vertexnum; i++) {
+				for (j = 1; j <= graph.vertexnum; j++) {
+					if (shortestPath->weight[item(i, j, shortestPath->rows)] != INFINITY) {
+						printf("  The path from vertex #%d to vertex #%d with the weight %d\n",
+							i, j, shortestPath->weight[item(i, j, shortestPath->rows)]);
+					}
+					else {
+						printf("  The path from vertex #%d to vertex #%d with the weight \'INFINITY\'\n", i, j);
+					}
+				}
+			}
+			FreeAdjacencyMatrix(shortestPath);
 			break;
 		case 5:
+			if (graph.vertexnum == 0) {
+				printf("\n\t| ERROR | Graph does not exist |\n\n");
+				break;
+			}
+			if ((clos = TransitiveClosure(graph.adjmatrix)) == NULL) {
+				break;
+			}
+			for (i = 1; i <= graph.vertexnum; i++) {
+				for (j = 1; j <= graph.vertexnum; j++) {
+					printf("  The path from vertex #%d to vertex #%d: %s\n",
+						i, j, (GetBitValueInTransitiveClosureMatrix(clos, i, j) == true) ? "TRUE" : "    FALSE");
+				}
+			}
+			FreeTransitiveClosureMatrix(clos);
+			break;
+		case 6:
 			PrintGraph(&graph);
 			break;
 		default:

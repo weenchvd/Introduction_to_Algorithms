@@ -3,8 +3,12 @@
 
 #include "AllPairsShortestPaths_common.h"
 
+#define INFINITY INT_MAX
+#define INFINITYMINUS INT_MIN
+#define NIL 0
 /* i - row number, j - column number, n - number of rows */
 #define item(i, j, n) ((i - DIFFERENCE) * n + (j - DIFFERENCE))
+#define GetClosureSizeInBytes(rows) (rows * rows / CHAR_BIT + (((rows * rows) % CHAR_BIT > 0) ? 1 : 0))
 
 typedef struct Graph {
 	struct AdjacencyList** adjlist;
@@ -55,27 +59,9 @@ typedef struct AdjacencyAndPredecessorMatrices {
 	struct AdjacencyMatrix* predSubgraph;
 } AdjPredSet_t;
 
-/*typedef struct TopologicalList {
-	struct AdjacencyList* head;
-} TopologicalList_t;
-
-typedef struct Queue {
-	struct GraphVertex** queue;
-	unsigned int size;
-	unsigned int head;
-	unsigned int tail;
-} Queue_t;
-
-typedef struct HeapQueue {
-	struct GraphVertex** handle;
-	int* priority;
-	int heapsize;
-	int heapsizelimit;
-} HeapQueue_t;
-
-typedef struct HeapQueueSet {
-	struct GraphVertex* handle;
-	int priority;
-} HeapQueueSet_t;*/
+typedef struct TransitiveClosure {
+	char* key;
+	int rows;
+} TClosure_t;
 
 #endif
