@@ -470,29 +470,60 @@ AdjacencyMatrix_t* FasterAllPairsShortestPaths(const AdjacencyMatrix_t* edgeWeig
 	return shortestPath;
 }
 
-AdjacencyMatrix_t* FloydWarshall(const AdjacencyMatrix_t* edgeWeight)
+AdjPredSet_t* FloydWarshall(const AdjacencyMatrix_t* edgeWeight)
 {
 	int i, j, k, n, currentWeight, newWeight;
-	AdjacencyMatrix_t* shortestPath, * newShortestPath;
+	AdjacencyMatrix_t* shortestPath, * predSubgraph, * newShortestPath, * newPredSubgraph, * tmpPath, * tmpPred;
+	AdjPredSet_t* adjPred;
+	if ((adjPred = malloc(sizeof(AdjPredSet_t))) == NULL) {
+		printf("\n\t| ERROR | Memory allocator error. No memory allocated |\n\n");
+		return NULL;
+	}
 	n = edgeWeight->rows;
 	if ((shortestPath = MakeCopyAdjacencyMatrix(edgeWeight)) == NULL) {
 		return NULL;
 	}
-	for (k = 1; k <= n; k++) {
-		if ((newShortestPath = CreateAdjacencyMatrix(n)) == NULL) {
-			return NULL;
+	if ((predSubgraph = CreateAdjacencyMatrix(n)) == NULL) {
+		return NULL;
+	}
+	if ((newShortestPath = CreateAdjacencyMatrix(n)) == NULL) {
+		return NULL;
+	}
+	if ((newPredSubgraph = CreateAdjacencyMatrix(n)) == NULL) {
+		return NULL;
+	}
+	for (i = 1; i <= n; i++) {
+		for (j = 1; j <= n; j++) {
+			predSubgraph->weight[item(i, j, n)] = (i == j || edgeWeight->weight[item(i, j, n)] == INFINITY) ? NIL : i;
 		}
+	}
+	for (k = 1; k <= n; k++) {
 		for (i = 1; i <= n; i++) {
 			for (j = 1; j <= n; j++) {
 				currentWeight = shortestPath->weight[item(i, j, n)];
 				newWeight = WeightSummarization(shortestPath->weight[item(i, k, n)], shortestPath->weight[item(k, j, n)]);
-				newShortestPath->weight[item(i, j, n)] = (newWeight < currentWeight) ? newWeight : currentWeight;
+				if (newWeight < currentWeight) {
+					newShortestPath->weight[item(i, j, n)] = newWeight;
+					newPredSubgraph->weight[item(i, j, n)] = predSubgraph->weight[item(k, j, n)];
+				}
+				else {
+					newShortestPath->weight[item(i, j, n)] = currentWeight;
+					newPredSubgraph->weight[item(i, j, n)] = predSubgraph->weight[item(i, j, n)];
+				}
 			}
 		}
-		FreeAdjacencyMatrix(shortestPath);
+		tmpPath = shortestPath;
+		tmpPred = predSubgraph;
 		shortestPath = newShortestPath;
+		predSubgraph = newPredSubgraph;
+		newShortestPath = tmpPath;
+		newPredSubgraph = tmpPred;
 	}
-	return shortestPath;
+	FreeAdjacencyMatrix(newShortestPath);
+	FreeAdjacencyMatrix(newPredSubgraph);
+	adjPred->shortestPath = shortestPath;
+	adjPred->predSubgraph = predSubgraph;
+	return adjPred;
 }
 
 void SetBitValueInTransitiveClosureMatrix(TClosure_t* clos, int i, int j, int value)

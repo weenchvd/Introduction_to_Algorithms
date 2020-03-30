@@ -27,7 +27,7 @@ AdjacencyMatrix_t* ExtendShortestPaths(AdjacencyMatrix_t* shortestPath, Adjacenc
 AdjPredSet_t* ExtendShortestPathsAndPredecessorSubgraph(AdjPredSet_t* adjpred, AdjacencyMatrix_t* edgeWeight);
 AdjPredSet_t* SlowAllPairsShortestPaths(const AdjacencyMatrix_t* edgeWeight);
 AdjacencyMatrix_t* FasterAllPairsShortestPaths(const AdjacencyMatrix_t* edgeWeight);
-AdjacencyMatrix_t* FloydWarshall(const AdjacencyMatrix_t* edgeWeight);
+AdjPredSet_t* FloydWarshall(const AdjacencyMatrix_t* edgeWeight);
 void SetBitValueInTransitiveClosureMatrix(TClosure_t* clos, int i, int j, int value);
 bool GetBitValueInTransitiveClosureMatrix(TClosure_t* clos, int i, int j);
 TClosure_t* TransitiveClosure(AdjacencyMatrix_t* edgeWeight);

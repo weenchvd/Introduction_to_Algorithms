@@ -1,6 +1,7 @@
 /* Chapter 25.1 | All-Pairs-Shortest-Paths */
 /* Exercise 25.1-7 | All-Pairs-Shortest-Paths */
 /* Chapter 25.2 | All-Pairs-Shortest-Paths */
+/* Exercise 25.2-3 | All-Pairs-Shortest-Paths */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -19,7 +20,7 @@ void PrintGraph(Graph_t* graph);
 void FreeAdjacencyMatrix(AdjacencyMatrix_t* adjmatrix);
 AdjPredSet_t* SlowAllPairsShortestPaths(const AdjacencyMatrix_t* edgeWeight);
 AdjacencyMatrix_t* FasterAllPairsShortestPaths(const AdjacencyMatrix_t* edgeWeight);
-AdjacencyMatrix_t* FloydWarshall(const AdjacencyMatrix_t* edgeWeight);
+AdjPredSet_t* FloydWarshall(const AdjacencyMatrix_t* edgeWeight);
 bool GetBitValueInTransitiveClosureMatrix(TClosure_t* clos, int i, int j);
 TClosure_t* TransitiveClosure(AdjacencyMatrix_t* edgeWeight);
 void FreeTransitiveClosureMatrix(TClosure_t* clos);
@@ -118,21 +119,26 @@ int main(void)
 				printf("\n\t| ERROR | Graph does not exist |\n\n");
 				break;
 			}
-			if ((shortestPath = FloydWarshall(graph.adjmatrix)) == NULL) {
+			if ((adjpred = FloydWarshall(graph.adjmatrix)) == NULL) {
 				break;
 			}
+			n = adjpred->shortestPath->rows;
 			for (i = 1; i <= graph.vertexnum; i++) {
 				for (j = 1; j <= graph.vertexnum; j++) {
-					if (shortestPath->weight[item(i, j, shortestPath->rows)] != INFINITY) {
-						printf("  The path from vertex #%d to vertex #%d with the weight %d\n",
-							i, j, shortestPath->weight[item(i, j, shortestPath->rows)]);
+					if (adjpred->shortestPath->weight[item(i, j, n)] != INFINITY) {
+						printf("  The path from vertex #%d to vertex #%d with the weight %d: ",
+							i, j, adjpred->shortestPath->weight[item(i, j, n)]);
 					}
 					else {
-						printf("  The path from vertex #%d to vertex #%d with the weight \'INFINITY\'\n", i, j);
+						printf("  The path from vertex #%d to vertex #%d with the weight \'INFINITY\': ", i, j);
 					}
+					PrintAllPairsShortestPath(adjpred->predSubgraph, i, j);
+					putchar('\n');
 				}
 			}
-			FreeAdjacencyMatrix(shortestPath);
+			FreeAdjacencyMatrix(adjpred->shortestPath);
+			FreeAdjacencyMatrix(adjpred->predSubgraph);
+			free(adjpred);
 			break;
 		case 5:
 			if (graph.vertexnum == 0) {
