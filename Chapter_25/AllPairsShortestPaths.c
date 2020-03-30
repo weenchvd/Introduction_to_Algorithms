@@ -509,6 +509,13 @@ AdjPredSet_t* FloydWarshall(const AdjacencyMatrix_t* edgeWeight)
 	}
 	adjPred->shortestPath = shortestPath;
 	adjPred->predSubgraph = predSubgraph;
+	adjPred->isNegativeWeightCycle = false;
+	for (i = 1; i <= n; i++) {
+		if (shortestPath->weight[item(i, i, n)] < 0) {
+			adjPred->isNegativeWeightCycle = true;
+			break;
+		}
+	}
 	return adjPred;
 }
 

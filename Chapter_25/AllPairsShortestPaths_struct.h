@@ -57,6 +57,7 @@ typedef struct AdjacencyMatrix {
 typedef struct AdjacencyAndPredecessorMatrices {
 	struct AdjacencyMatrix* shortestPath;
 	struct AdjacencyMatrix* predSubgraph;
+	int isNegativeWeightCycle;
 } AdjPredSet_t;
 
 typedef struct TransitiveClosure {

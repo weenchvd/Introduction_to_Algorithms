@@ -3,6 +3,7 @@
 /* Chapter 25.2 | All-Pairs-Shortest-Paths */
 /* Exercise 25.2-3 | All-Pairs-Shortest-Paths */
 /* Exercise 25.2-4 | All-Pairs-Shortest-Paths */
+/* Exercise 25.2-6 | All-Pairs-Shortest-Paths */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -124,18 +125,24 @@ int main(void)
 				break;
 			}
 			n = adjpred->shortestPath->rows;
-			for (i = 1; i <= graph.vertexnum; i++) {
-				for (j = 1; j <= graph.vertexnum; j++) {
-					if (adjpred->shortestPath->weight[item(i, j, n)] != INFINITY) {
-						printf("  The path from vertex #%d to vertex #%d with the weight %d: ",
-							i, j, adjpred->shortestPath->weight[item(i, j, n)]);
+			if (adjpred->isNegativeWeightCycle == false) {
+				printf("  The graph does not contain a negative-weight cycle\n");
+				for (i = 1; i <= graph.vertexnum; i++) {
+					for (j = 1; j <= graph.vertexnum; j++) {
+						if (adjpred->shortestPath->weight[item(i, j, n)] != INFINITY) {
+							printf("  The path from vertex #%d to vertex #%d with the weight %d: ",
+								i, j, adjpred->shortestPath->weight[item(i, j, n)]);
+						}
+						else {
+							printf("  The path from vertex #%d to vertex #%d with the weight \'INFINITY\': ", i, j);
+						}
+						PrintAllPairsShortestPath(adjpred->predSubgraph, i, j);
+						putchar('\n');
 					}
-					else {
-						printf("  The path from vertex #%d to vertex #%d with the weight \'INFINITY\': ", i, j);
-					}
-					PrintAllPairsShortestPath(adjpred->predSubgraph, i, j);
-					putchar('\n');
 				}
+			}
+			else {
+				printf("  The graph contain a negative-weight cycle\n");
 			}
 			FreeAdjacencyMatrix(adjpred->shortestPath);
 			FreeAdjacencyMatrix(adjpred->predSubgraph);
