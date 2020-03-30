@@ -2,6 +2,7 @@
 /* Exercise 25.1-7 | All-Pairs-Shortest-Paths */
 /* Chapter 25.2 | All-Pairs-Shortest-Paths */
 /* Exercise 25.2-3 | All-Pairs-Shortest-Paths */
+/* Exercise 25.2-4 | All-Pairs-Shortest-Paths */
 
 #include <stdio.h>
 #include <stdlib.h>

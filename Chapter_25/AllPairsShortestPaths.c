@@ -473,7 +473,7 @@ AdjacencyMatrix_t* FasterAllPairsShortestPaths(const AdjacencyMatrix_t* edgeWeig
 AdjPredSet_t* FloydWarshall(const AdjacencyMatrix_t* edgeWeight)
 {
 	int i, j, k, n, currentWeight, newWeight;
-	AdjacencyMatrix_t* shortestPath, * predSubgraph, * newShortestPath, * newPredSubgraph, * tmpPath, * tmpPred;
+	AdjacencyMatrix_t* shortestPath, * predSubgraph;
 	AdjPredSet_t* adjPred;
 	if ((adjPred = malloc(sizeof(AdjPredSet_t))) == NULL) {
 		printf("\n\t| ERROR | Memory allocator error. No memory allocated |\n\n");
@@ -484,12 +484,6 @@ AdjPredSet_t* FloydWarshall(const AdjacencyMatrix_t* edgeWeight)
 		return NULL;
 	}
 	if ((predSubgraph = CreateAdjacencyMatrix(n)) == NULL) {
-		return NULL;
-	}
-	if ((newShortestPath = CreateAdjacencyMatrix(n)) == NULL) {
-		return NULL;
-	}
-	if ((newPredSubgraph = CreateAdjacencyMatrix(n)) == NULL) {
 		return NULL;
 	}
 	for (i = 1; i <= n; i++) {
@@ -503,24 +497,16 @@ AdjPredSet_t* FloydWarshall(const AdjacencyMatrix_t* edgeWeight)
 				currentWeight = shortestPath->weight[item(i, j, n)];
 				newWeight = WeightSummarization(shortestPath->weight[item(i, k, n)], shortestPath->weight[item(k, j, n)]);
 				if (newWeight < currentWeight) {
-					newShortestPath->weight[item(i, j, n)] = newWeight;
-					newPredSubgraph->weight[item(i, j, n)] = predSubgraph->weight[item(k, j, n)];
+					shortestPath->weight[item(i, j, n)] = newWeight;
+					predSubgraph->weight[item(i, j, n)] = predSubgraph->weight[item(k, j, n)];
 				}
 				else {
-					newShortestPath->weight[item(i, j, n)] = currentWeight;
-					newPredSubgraph->weight[item(i, j, n)] = predSubgraph->weight[item(i, j, n)];
+					shortestPath->weight[item(i, j, n)] = currentWeight;
+					predSubgraph->weight[item(i, j, n)] = predSubgraph->weight[item(i, j, n)];
 				}
 			}
 		}
-		tmpPath = shortestPath;
-		tmpPred = predSubgraph;
-		shortestPath = newShortestPath;
-		predSubgraph = newPredSubgraph;
-		newShortestPath = tmpPath;
-		newPredSubgraph = tmpPred;
 	}
-	FreeAdjacencyMatrix(newShortestPath);
-	FreeAdjacencyMatrix(newPredSubgraph);
 	adjPred->shortestPath = shortestPath;
 	adjPred->predSubgraph = predSubgraph;
 	return adjPred;
