@@ -15,6 +15,8 @@ typedef struct Graph {
 	struct GraphVertex** vertlist;
 	struct GraphEdge** edgelist;
 	struct AdjacencyMatrix* adjmatrix;
+	struct GraphVertex* auxVertex;
+	struct AdjacencyList* auxAdjList;
 	int vertexnum;							/* number of vertices */
 	int edgenum;							/* number of edges */
 	char type;								/* graph type: directed or undirected */
@@ -64,5 +66,17 @@ typedef struct TransitiveClosure {
 	char* key;
 	int rows;
 } TClosure_t;
+
+typedef struct HeapQueue {
+	struct GraphVertex** handle;
+	int* priority;
+	int heapsize;
+	int heapsizelimit;
+} HeapQueue_t;
+
+typedef struct HeapQueueSet {
+	struct GraphVertex* handle;
+	int priority;
+} HeapQueueSet_t;
 
 #endif

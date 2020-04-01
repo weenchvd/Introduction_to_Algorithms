@@ -596,3 +596,326 @@ void FreeTransitiveClosureMatrix(TClosure_t* clos)
 	free(clos);
 	return;
 }
+
+AdjacencyMatrix_t* Johnson(Graph_t* graph)
+{
+	int i, j, n;
+	int* h;
+	GraphVertex_t* vertex;
+	AdjacencyList_t* adjSet;
+	AdjacencyMatrix_t* shortestPath, * edgeWeight, * newEdgeWeight;
+	shortestPath = NULL;
+	n = graph->vertexnum;
+	if ((vertex = CreateVertex()) == NULL) {
+		return NULL;
+	}
+	graph->auxVertex = vertex;
+	for (i = 0; i < n; i++) {
+		if ((adjSet = CreateAdjacencySet()) == NULL) {
+			return NULL;
+		}
+		adjSet->vertex = graph->vertlist[i];
+		adjSet->next = graph->auxAdjList;
+		adjSet->weight = 0;
+		graph->auxAdjList = adjSet;
+	}
+	if (BellmanFord(graph, vertex) == false) {
+		printf("\n\t| ERROR | The graph contain a negative-weight cycle |\n\n");
+	}
+	else {
+		if ((h = malloc(sizeof(int) * n)) == NULL) {
+			printf("\n\t| ERROR | Memory allocator error. No memory allocated |\n\n");
+			return NULL;
+		}
+		for (i = 0; i < n; i++) {
+			h[i] = graph->vertlist[i]->distance;
+		}
+		edgeWeight = graph->adjmatrix;
+		if ((newEdgeWeight = CreateAdjacencyMatrix(n)) == NULL) {
+			return NULL;
+		}
+		for (i = 1; i <= n; i++) {
+			for (j = 1; j <= n; j++) {
+				newEdgeWeight->weight[item(i, j, n)] =
+					WeightSummarization(edgeWeight->weight[item(i, j, n)], (h[i - DIFFERENCE] - h[j - DIFFERENCE]));
+			}
+		}
+		if ((shortestPath = CreateAdjacencyMatrix(n)) == NULL) {
+			return NULL;
+		}
+		graph->adjmatrix = newEdgeWeight;
+		for (i = 1; i <= n; i++) {
+			vertex = graph->vertlist[i - DIFFERENCE];
+			Dijkstra(graph, vertex);
+			for (j = 1; j <= n; j++) {
+				shortestPath->weight[item(i, j, n)] =
+					WeightSummarization(graph->vertlist[j - DIFFERENCE]->distance, (h[j - DIFFERENCE] - h[i - DIFFERENCE]));
+			}
+		}
+		graph->adjmatrix = edgeWeight;
+		FreeAdjacencyMatrix(newEdgeWeight);
+		free(h);
+	}
+	FreeAuxDataFromGraph(graph);
+	return shortestPath;
+}
+
+void FreeAuxDataFromGraph(Graph_t* graph)
+{
+	AdjacencyList_t* adjSet, * adjSetNext;
+	free(graph->auxVertex);
+	adjSet = graph->auxAdjList;
+	while (adjSet != NULL) {
+		adjSetNext = adjSet->next;
+		free(adjSet);
+		adjSet = adjSetNext;
+	}
+	graph->auxVertex = NULL;
+	graph->auxAdjList = NULL;
+	return;
+}
+
+void InitializeSingleSource(Graph_t* graph, GraphVertex_t* source)
+{
+	int i;
+	for (i = 0; i < graph->vertexnum; i++) {
+		graph->vertlist[i]->distance = INFINITY;
+		graph->vertlist[i]->parent = NULL;
+	}
+	source->distance = 0;
+	return;
+}
+
+void Relax(GraphVertex_t* source, GraphVertex_t* destination, int edgeweight)
+{
+	int sum;
+	sum = WeightSummarization(source->distance, edgeweight);
+	if (destination->distance > sum) {
+		destination->distance = sum;
+		destination->parent = source;
+	}
+	return;
+}
+
+bool BellmanFord(Graph_t* graph, GraphVertex_t* source)
+{
+	int i, j, numberOfVertices;
+	GraphVertex_t* vertex;
+	AdjacencyList_t* adjSet;
+	if (graph->auxVertex != NULL) {
+		vertex = graph->auxVertex;
+		numberOfVertices = graph->vertexnum + 1;
+	}
+	else {
+		numberOfVertices = graph->vertexnum;
+	}
+	InitializeSingleSource(graph, source);
+	for (i = 1; i < numberOfVertices; i++) {
+		for (j = 0; j < graph->edgenum; j++) {
+			Relax(graph->edgelist[j]->vertex1, graph->edgelist[j]->vertex2, graph->edgelist[j]->weight);
+		}
+		adjSet = graph->auxAdjList;
+		while (adjSet != NULL) {
+			Relax(vertex, adjSet->vertex, adjSet->weight);
+			adjSet = adjSet->next;
+		}
+	}
+	for (j = 0; j < graph->edgenum; j++) {
+		if (graph->edgelist[j]->vertex2->distance > WeightSummarization(graph->edgelist[j]->vertex1->distance, graph->edgelist[j]->weight)) {
+			return false;
+		}
+	}
+	return true;
+}
+
+void Dijkstra(Graph_t* graph, GraphVertex_t* source)
+{
+	int i, j, n, distance, weight;
+	GraphVertex_t* vertex1, * vertex2;
+	HeapQueue_t* vertices;
+	HeapQueueSet_t set;
+	n = graph->vertexnum;
+	if ((vertices = CreateHeapQueue(n)) == NULL) {
+		return;
+	}
+	InitializeSingleSource(graph, source);
+	for (i = 0; i < n; i++) {
+		graph->vertlist[i]->u2.mark = true;
+		MinHeapInsert(vertices, graph->vertlist[i]);
+	}
+	while (vertices->heapsize > 1) {
+		HeapExtractMin(vertices, &set);
+		vertex1 = set.handle;
+		vertex1->u2.mark = false;
+		i = vertex1->number;
+		for (j = 1; j <= n; j++) {
+			if ((weight = graph->adjmatrix->weight[item(i, j, n)]) != INFINITY) {
+				vertex2 = graph->vertlist[j - DIFFERENCE];
+				distance = vertex2->distance;
+				Relax(vertex1, vertex2, weight);
+				if (vertex2->u2.mark == true && distance != vertex2->distance) {
+					HeapDecreaseKey(vertices, vertex2->u1.index, vertex2->distance);
+				}
+			}
+		}
+	}
+	HeapExtractMin(vertices, &set);
+	FreeHeapQueue(vertices);
+	return;
+}
+
+HeapQueue_t* CreateHeapQueue(int heapsizelimit)
+{
+	HeapQueue_t* queue;
+	if ((queue = malloc(sizeof(HeapQueue_t))) == NULL) {
+		printf("\n\t| ERROR | Memory allocator error. No memory allocated |\n\n");
+		return NULL;
+	}
+	if (InitializeHeap(queue, heapsizelimit) == FAILURE) {
+		free(queue);
+		return NULL;
+	}
+	return queue;
+}
+
+int InitializeHeap(HeapQueue_t* queue, int heapsizelimit)
+{
+	queue->heapsize = 0;
+	queue->heapsizelimit = heapsizelimit;
+	if ((queue->handle = malloc(sizeof(GraphVertex_t*) * (queue->heapsizelimit + HEAPSTARTINDEX))) == NULL) {
+		printf("\n\t| ERROR | Memory allocator error. No memory allocated |\n\n");
+		return FAILURE;
+	}
+	if ((queue->priority = malloc(sizeof(int) * (queue->heapsizelimit + HEAPSTARTINDEX))) == NULL) {
+		printf("\n\t| ERROR | Memory allocator error. No memory allocated |\n\n");
+		return FAILURE;
+	}
+	return SUCCESS;
+}
+
+HeapQueueSet_t* HeapMin(HeapQueue_t* queue, HeapQueueSet_t* set)
+{
+	if (queue->heapsize < 1) {
+		printf("\n\t| ERROR | Heap underflow |\n\n");
+		return NULL;
+	}
+	set->priority = HEAPMINIMUM(queue->priority);
+	set->handle = HEAPMINIMUM(queue->handle);
+	return set;
+}
+
+HeapQueueSet_t* HeapExtractMin(HeapQueue_t* queue, HeapQueueSet_t* set)
+{
+	if (queue->heapsize < 1) {
+		printf("\n\t| ERROR | Heap underflow |\n\n");
+		return NULL;
+	}
+	set->priority = queue->priority[HEAPSTARTINDEX];
+	set->handle = queue->handle[HEAPSTARTINDEX];
+	queue->priority[HEAPSTARTINDEX] = queue->priority[queue->heapsize];
+	queue->handle[HEAPSTARTINDEX] = queue->handle[queue->heapsize--];
+	queue->handle[HEAPSTARTINDEX]->u1.index = HEAPSTARTINDEX;
+	MinHeapify(queue, HEAPSTARTINDEX);
+	return set;
+}
+
+void HeapDecreaseKey(HeapQueue_t* queue, int index, int newpriority)
+{
+	int parent;
+	GraphVertex_t* handle;
+	if (index > queue->heapsize) {
+		printf("\n\t| ERROR | Index is greater than heap size |\n\n");
+		return;
+	}
+	if (index < HEAPSTARTINDEX) {
+		printf("\n\t| ERROR | Index is less than %d |\n\n", HEAPSTARTINDEX);
+		return;
+	}
+	if (newpriority > queue->priority[index]) {
+		printf("\n\t| ERROR | New priority is bigger than current priority |\n\n");
+		return;
+	}
+	handle = queue->handle[index];
+	while (index > 1 && queue->priority[parent = PARENT(index)] > newpriority) {
+		queue->priority[index] = queue->priority[parent];
+		queue->handle[index] = queue->handle[parent];
+		queue->handle[index]->u1.index = index;
+		index = parent;
+	}
+	queue->priority[index] = newpriority;
+	queue->handle[index] = handle;
+	queue->handle[index]->u1.index = index;
+	return;
+}
+
+void MinHeapInsert(HeapQueue_t* queue, GraphVertex_t* handle)
+{
+	if (queue->heapsize >= queue->heapsizelimit) {
+		printf("\n\t| ERROR | Heap size limit reached |\n\n");
+		return;
+	}
+	queue->priority[++queue->heapsize] = INT_MAX;
+	queue->handle[queue->heapsize] = handle;
+	HeapDecreaseKey(queue, queue->heapsize, handle->distance);
+	return;
+}
+
+void MinHeapDelete(HeapQueue_t* queue, int index)
+{
+	if (index > queue->heapsize) {
+		printf("\n\t| ERROR | Index is greater than heap size |\n\n");
+		return;
+	}
+	if (index < HEAPSTARTINDEX) {
+		printf("\n\t| ERROR | Index is less than %d |\n\n", HEAPSTARTINDEX);
+		return;
+	}
+	queue->priority[index] = queue->priority[queue->heapsize];
+	queue->handle[index] = queue->handle[queue->heapsize--];
+	queue->handle[index]->u1.index = index;
+	MinHeapify(queue, index);
+	return;
+}
+
+void MinHeapify(HeapQueue_t* queue, int index)
+{
+	int left, right, smallest;
+	HeapQueueSet_t tmp;
+	while (TRUE)
+	{
+		left = LEFT(index);
+		right = RIGHT(index);
+		if (left <= queue->heapsize && queue->priority[left] < queue->priority[index]) {
+			smallest = left;
+		}
+		else {
+			smallest = index;
+		}
+		if (right <= queue->heapsize && queue->priority[right] < queue->priority[smallest]) {
+			smallest = right;
+		}
+		if (smallest != index) {
+			tmp.priority = queue->priority[index];
+			tmp.handle = queue->handle[index];
+			queue->priority[index] = queue->priority[smallest];
+			queue->handle[index] = queue->handle[smallest];
+			queue->handle[index]->u1.index = index;
+			queue->priority[smallest] = tmp.priority;
+			queue->handle[smallest] = tmp.handle;
+			queue->handle[smallest]->u1.index = smallest;
+			index = smallest;
+		}
+		else {
+			break;
+		}
+	}
+	return;
+}
+
+void FreeHeapQueue(HeapQueue_t* queue)
+{
+	free(queue->handle);
+	free(queue->priority);
+	free(queue);
+	return;
+}

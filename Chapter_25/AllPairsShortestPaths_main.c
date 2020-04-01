@@ -4,6 +4,7 @@
 /* Exercise 25.2-3 | All-Pairs-Shortest-Paths */
 /* Exercise 25.2-4 | All-Pairs-Shortest-Paths */
 /* Exercise 25.2-6 | All-Pairs-Shortest-Paths */
+/* Chapter 25.3 | All-Pairs-Shortest-Paths */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -26,7 +27,7 @@ AdjPredSet_t* FloydWarshall(const AdjacencyMatrix_t* edgeWeight);
 bool GetBitValueInTransitiveClosureMatrix(TClosure_t* clos, int i, int j);
 TClosure_t* TransitiveClosure(AdjacencyMatrix_t* edgeWeight);
 void FreeTransitiveClosureMatrix(TClosure_t* clos);
-
+AdjacencyMatrix_t* Johnson(Graph_t* graph);
 
 
 int main(void)
@@ -34,7 +35,7 @@ int main(void)
 	int i, j, n, cond, action;
 	char* list = "\tList of actions: -1 (EXIT), 0 (List of actions),\n"
 		"1 (CreateGraph), 2 (SlowAllPairsShortestPaths), 3 (FasterAllPairsShortestPaths), 4 (FloydWarshall)\n"
-		"5 (TransitiveClosure), 6 (PrintGraph)\n\n";
+		"5 (TransitiveClosure), 6 (Johnson), 7 (PrintGraph)\n\n";
 	Graph_t graph;
 	GraphVertex_t* vertex;
 	AdjacencyMatrix_t* shortestPath;
@@ -42,7 +43,7 @@ int main(void)
 	TClosure_t* clos;
 	printf(list);
 	graph.vertexnum = graph.edgenum = graph.type = 0;
-	graph.adjlist = graph.vertlist = graph.edgelist = graph.adjmatrix = NULL;
+	graph.adjlist = graph.vertlist = graph.edgelist = graph.adjmatrix = graph.auxVertex = graph.auxAdjList = NULL;
 	cond = true;
 	while (cond) {
 		printf("Please enter an action: ");
@@ -165,6 +166,22 @@ int main(void)
 			FreeTransitiveClosureMatrix(clos);
 			break;
 		case 6:
+			if (graph.vertexnum == 0) {
+				printf("\n\t| ERROR | Graph does not exist |\n\n");
+				break;
+			}
+			if ((shortestPath = Johnson(&graph)) == NULL) {
+				break;
+			}
+			for (i = 1; i <= graph.vertexnum; i++) {
+				for (j = 1; j <= graph.vertexnum; j++) {
+					printf("  The path from vertex #%d to vertex #%d with the weight %d\n",
+						i, j, shortestPath->weight[item(i, j, shortestPath->rows)]);
+				}
+			}
+			FreeAdjacencyMatrix(shortestPath);
+			break;
+		case 7:
 			PrintGraph(&graph);
 			break;
 		default:
