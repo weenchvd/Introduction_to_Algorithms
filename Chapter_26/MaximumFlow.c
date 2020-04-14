@@ -630,3 +630,160 @@ inline int IsQueueFull(Queue_t* q)
 {
 	return (q->head == ((q->tail + 1 == q->size) ? ARRAYSTARTINDEX : q->tail + 1)) ? true : false;
 }
+
+int GenericPushRelabel(Graph_t* graph, GraphVertex_t* source, GraphVertex_t* destination)
+{
+	int proceed;
+	InitializePreflow(graph, source);
+	proceed = true;
+	while (proceed == true) {
+		proceed = false;
+		PushAll(graph, &proceed);
+		RelabelAll(graph, destination, &proceed);
+	}
+	source->u1.excess = ~source->u1.excess + 1;
+	return source->u1.excess;
+}
+
+void InitializePreflow(Graph_t* graph, GraphVertex_t* source)
+{
+	int i;
+	AdjLLSet_t* adjSet;
+	for (i = FIRSTVERTEXNUMBER; i < graph->nVertices + FIRSTVERTEXNUMBER; i++) {
+		graph->vertList[i]->u1.excess = 0;
+		graph->vertList[i]->u2.height = 0;
+	}
+	for (i = 0; i < graph->nEdges; i++) {
+		graph->edgeList[i]->u2.flow = 0;
+	}
+	source->u2.height = graph->nVertices;
+	adjSet = graph->adjList[source->number];
+	while (adjSet != NULL) {
+		adjSet->edge->u2.flow = adjSet->edge->u1.capacity;
+		adjSet->edge->destVertex->u1.excess = adjSet->edge->u1.capacity;
+		source->u1.excess -= adjSet->edge->u1.capacity;
+		adjSet = adjSet->next;
+	}
+	return;
+}
+
+void PushAll(Graph_t* graph, int* condition)
+{
+	int i, residualCapacity;
+	GraphEdge_t* edge;
+	AdjLLSet_t* adjSet;
+	for (i = FIRSTVERTEXNUMBER; i < graph->nVertices + FIRSTVERTEXNUMBER; i++) {
+		adjSet = graph->adjList[i];
+		while (adjSet != NULL) {
+			edge = adjSet->edge;
+			/* original edge */
+			residualCapacity = edge->u1.capacity - edge->u2.flow;
+			if (edge->sourceVertex->u1.excess > 0 && residualCapacity > 0 && edge->sourceVertex->u2.height == edge->destVertex->u2.height + 1) {
+				PushFlowAlongOriginalEdge(edge, residualCapacity);
+				*condition = true;
+			}
+			/* residual edge */
+			residualCapacity = edge->u2.flow;
+			if (edge->destVertex->u1.excess > 0 && residualCapacity > 0 && edge->destVertex->u2.height == edge->sourceVertex->u2.height + 1) {
+				PushFlowAlongResidualEdge(edge, residualCapacity);
+				*condition = true;
+			}
+			adjSet = adjSet->next;
+		}
+	}
+	return;
+}
+
+void PushFlowAlongOriginalEdge(GraphEdge_t* originalEdge, int residualCapacity)
+{
+	int flow;
+	flow = min(originalEdge->sourceVertex->u1.excess, residualCapacity);
+	originalEdge->u2.flow += flow;
+	originalEdge->sourceVertex->u1.excess -= flow;
+	originalEdge->destVertex->u1.excess += flow;
+	return;
+}
+
+
+void PushFlowAlongResidualEdge(GraphEdge_t* originalEdge, int residualCapacity)
+{
+	int flow;
+	flow = min(originalEdge->destVertex->u1.excess, residualCapacity);
+	originalEdge->u2.flow -= flow;
+	originalEdge->destVertex->u1.excess -= flow;
+	originalEdge->sourceVertex->u1.excess += flow;
+	return;
+}
+
+void RelabelAll(Graph_t* graph, GraphVertex_t* destination, int* condition)
+{
+	char relabel;
+	int i, j, minHeight, residualCapacity;
+	GraphVertex_t* vertex, *adjacentVertex;
+	GraphEdge_t* edge;
+	AdjLLSet_t* adjSet;
+	for (i = FIRSTVERTEXNUMBER; i < graph->nVertices + FIRSTVERTEXNUMBER; i++) {
+		vertex = graph->vertList[i];
+		if (vertex == destination || vertex->u1.excess <= 0) {
+			continue;
+		}
+		relabel = true;
+		minHeight = INT_MAX;
+		adjSet = graph->adjList[i];
+		while (adjSet != NULL) {
+			edge = adjSet->edge;
+			/* original edge */
+			residualCapacity = edge->u1.capacity - edge->u2.flow;
+			if (residualCapacity > 0) {
+				if (vertex->u2.height <= edge->destVertex->u2.height) {
+					if (edge->destVertex->u2.height < minHeight) {
+						minHeight = edge->destVertex->u2.height;
+					}
+				}
+				else {
+					relabel = false;
+					break;
+				}
+			}
+			adjSet = adjSet->next;
+		}
+		if (relabel == false) {
+			continue;
+		}
+		for (j = FIRSTVERTEXNUMBER; j < graph->nVertices + FIRSTVERTEXNUMBER; j++) {
+			adjSet = graph->adjList[j];
+			while (adjSet != NULL) {
+				if (adjSet->edge->destVertex == vertex) {
+					edge = adjSet->edge;
+					/* residual edge */
+					residualCapacity = edge->u2.flow;
+					if (residualCapacity > 0) {
+						if (vertex->u2.height <= edge->sourceVertex->u2.height) {
+							if (edge->sourceVertex->u2.height < minHeight) {
+								minHeight = edge->sourceVertex->u2.height;
+							}
+						}
+						else {
+							relabel = false;
+							j = graph->nVertices + FIRSTVERTEXNUMBER;
+						}
+					}
+					break;
+				}
+				adjSet = adjSet->next;
+			}
+		}
+		if (relabel == true) {
+			RelabelVertex(vertex, minHeight);
+			*condition = true;
+			//break; ?
+		}
+	}
+	return;
+}
+
+void RelabelVertex(GraphVertex_t* vertex, int minHeight)
+{
+	vertex->u2.height = minHeight + 1;
+	return;
+}

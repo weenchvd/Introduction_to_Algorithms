@@ -1,4 +1,5 @@
 /* Chapter 26.2 | Maximum-Flow */
+/* Chapter 26.4 | Maximum-Flow */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -13,10 +14,9 @@ int main(void)
 {
 	int i, j, n, cond, action;
 	char* list = "\tList of actions: -1 (EXIT), 0 (List of actions),\n"
-		"1 (CreateGraph), 2 (EdmondsKarp), 3 (), 4 ()\n"
+		"1 (CreateGraph), 2 (EdmondsKarp), 3 (GenericPushRelabel), 4 ()\n"
 		"5 (PrintGraph)\n\n";
 	Graph_t graph;
-	//GraphVertex_t* vertex;
 	printf(list);
 	graph.nVertices = graph.nEdges = graph.graphType = 0;
 	graph.adjList = graph.vertList = graph.edgeList = graph.adjMatrix = graph.auxVertex = graph.auxAdjList = NULL;
@@ -77,6 +77,32 @@ int main(void)
 			if ((n = EdmondsKarp(&graph, graph.vertList[i], graph.vertList[j])) == FAILURE) {
 				break;
 			}
+			printf("    The flow from source vertex #%d to sink vertex #%d: %d\n", i, j, n);
+			break;
+		case 3:
+			if (graph.nVertices == 0) {
+				printf("\n\t| ERROR | Graph does not exist |\n\n");
+				break;
+			}
+			printf("  Please enter the source vertex number: ");
+			if (scanf("%d", &i) <= 0) {
+				printf("\n\t| ERROR | Incorrect input |\n\n");
+				break;
+			}
+			if (i < 1 || i > graph.nVertices) {
+				printf("\n\t| ERROR | The number must be from 1 to %d |\n\n", graph.nVertices);
+				break;
+			}
+			printf("  Please enter the sink vertex number: ");
+			if (scanf("%d", &j) <= 0) {
+				printf("\n\t| ERROR | Incorrect input |\n\n");
+				break;
+			}
+			if (j < 1 || j > graph.nVertices) {
+				printf("\n\t| ERROR | The number must be from 1 to %d |\n\n", graph.nVertices);
+				break;
+			}
+			n = GenericPushRelabel(&graph, graph.vertList[i], graph.vertList[j]);
 			printf("    The flow from source vertex #%d to sink vertex #%d: %d\n", i, j, n);
 			break;
 		case 5:

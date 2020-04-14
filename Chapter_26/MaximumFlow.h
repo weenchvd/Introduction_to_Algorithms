@@ -21,5 +21,12 @@ void Enqueue(Queue_t* q, void* x);
 void* Dequeue(Queue_t* q);
 inline int IsQueueEmpty(Queue_t* q);
 inline int IsQueueFull(Queue_t* q);
+int GenericPushRelabel(Graph_t* graph, GraphVertex_t* source, GraphVertex_t* destination);
+void InitializePreflow(Graph_t* graph, GraphVertex_t* source);
+void PushAll(Graph_t* graph, int* condition);
+void PushFlowAlongOriginalEdge(GraphEdge_t* originalEdge, int residualCapacity);
+void PushFlowAlongResidualEdge(GraphEdge_t* originalEdge, int residualCapacity);
+void RelabelAll(Graph_t* graph, GraphVertex_t* destination, int* condition);
+void RelabelVertex(GraphVertex_t* vertex, int minHeight);
 
 #endif

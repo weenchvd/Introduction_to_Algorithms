@@ -29,14 +29,16 @@ typedef struct GraphVertex {
 	int distance;
 	int discovered;
 	int finished;
-	union {
+	union RankKeyIndexExcess {
 		int rank;
 		int key;
 		int index;
+		int excess;
 	} u1;
-	union {
+	union ColorMarkHeight {
 		char color;
 		char mark;
+		int height;
 	} u2;
 } GraphVertex_t;
 
