@@ -28,5 +28,16 @@ void PushFlowAlongOriginalEdge(GraphEdge_t* originalEdge, int residualCapacity);
 void PushFlowAlongResidualEdge(GraphEdge_t* originalEdge, int residualCapacity);
 void RelabelAll(Graph_t* graph, GraphVertex_t* destination, int* condition);
 void RelabelVertex(GraphVertex_t* vertex, int minHeight);
+int RelabelToFront(Graph_t* graph, GraphVertex_t* source, GraphVertex_t* destination);
+void Discharge(GraphVertex_t* vertex, SinglyLLSetPtr_t** neighborList);
+SinglyLLSetPtr_t** CreateNeighborList(Graph_t* graph);
+void FreeNeighborList(Graph_t* graph, SinglyLLSetPtr_t** neighborList);
+SinglyLLSetPtr_t* CreateVertexList(Graph_t* graph, GraphVertex_t* source, GraphVertex_t* destination);
+void FreeVertexList(SinglyLLSetPtr_t* vertexList);
+SinglyLLSetPtr_t* SinglyLinkedListCreateSet();
+SinglyLLSetPtr_t* SinglyLinkedListSearchSet(SinglyLLSetPtr_t** head, void* ptr);
+SinglyLLSetPtr_t** SinglyLinkedListGetPointerToNextPointerOfPreviousSet(SinglyLLSetPtr_t** head, SinglyLLSetPtr_t* set);
+void SinglyLinkedListInsertSet(SinglyLLSetPtr_t** head, SinglyLLSetPtr_t* set);
+void SinglyLinkedListExtractSet(SinglyLLSetPtr_t** head, SinglyLLSetPtr_t* set);
 
 #endif

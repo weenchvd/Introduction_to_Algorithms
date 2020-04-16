@@ -776,7 +776,6 @@ void RelabelAll(Graph_t* graph, GraphVertex_t* destination, int* condition)
 		if (relabel == true) {
 			RelabelVertex(vertex, minHeight);
 			*condition = true;
-			//break; ?
 		}
 	}
 	return;
@@ -785,5 +784,220 @@ void RelabelAll(Graph_t* graph, GraphVertex_t* destination, int* condition)
 void RelabelVertex(GraphVertex_t* vertex, int minHeight)
 {
 	vertex->u2.height = minHeight + 1;
+	return;
+}
+
+int RelabelToFront(Graph_t* graph, GraphVertex_t* source, GraphVertex_t* destination)
+{
+	int i, oldHeight;
+	GraphVertex_t* vertex;
+	SinglyLLSetPtr_t** neighborList, * vertexList, *currentVertexSet;
+	if ((neighborList = CreateNeighborList(graph)) == NULL) {
+		return FAILURE;
+	}
+	InitializePreflow(graph, source);
+	if ((vertexList = CreateVertexList(graph, source, destination)) == NULL) {
+		return FAILURE;
+	}
+	for (i = FIRSTVERTEXNUMBER; i < graph->nVertices + FIRSTVERTEXNUMBER; i++) {
+		graph->vertList[i]->currentNeighborSet = neighborList[i];
+	}
+	currentVertexSet = vertexList;
+	while (currentVertexSet != NULL) {
+		vertex = currentVertexSet->ptr;
+		oldHeight = vertex->u2.height;
+		Discharge(vertex, neighborList);
+		if (vertex->u2.height > oldHeight) {
+			SinglyLinkedListExtractSet(&vertexList, currentVertexSet);
+			SinglyLinkedListInsertSet(&vertexList, currentVertexSet);
+		}
+		currentVertexSet = currentVertexSet->next;
+	}
+	FreeNeighborList(graph, neighborList);
+	FreeVertexList(vertexList);
+	source->u1.excess = ~source->u1.excess + 1;
+	return source->u1.excess;
+}
+
+void Discharge(GraphVertex_t* vertex, SinglyLLSetPtr_t** neighborList)
+{
+	int residualCapacity, minHeight;
+	GraphVertex_t* neighborVertex;
+	GraphEdge_t* edge;
+	SinglyLLSetPtr_t* currentNeighborSet;
+	while (vertex->u1.excess > 0) {
+		if (vertex->currentNeighborSet == NULL) {
+			vertex->currentNeighborSet = currentNeighborSet = neighborList[vertex->number];
+			minHeight = INT_MAX;
+			while (currentNeighborSet != NULL) {
+				edge = currentNeighborSet->ptr;
+				if (vertex == edge->sourceVertex) {
+					neighborVertex = edge->destVertex;
+					residualCapacity = edge->u1.capacity - edge->u2.flow;
+				}
+				else {
+					neighborVertex = edge->sourceVertex;
+					residualCapacity = edge->u2.flow;
+				}
+				if (residualCapacity > 0 && vertex->u2.height <= neighborVertex->u2.height) {
+					if (neighborVertex->u2.height < minHeight) {
+						minHeight = neighborVertex->u2.height;
+					}
+				}
+				currentNeighborSet = currentNeighborSet->next;
+			}
+			RelabelVertex(vertex, minHeight);
+		}
+		else {
+			edge = vertex->currentNeighborSet->ptr;
+			if (vertex == edge->sourceVertex) {
+				neighborVertex = edge->destVertex;
+				residualCapacity = edge->u1.capacity - edge->u2.flow;
+			}
+			else {
+				neighborVertex = edge->sourceVertex;
+				residualCapacity = edge->u2.flow;
+			}
+			if (residualCapacity > 0 && vertex->u2.height == neighborVertex->u2.height + 1) {
+				if (vertex == edge->sourceVertex) {
+					PushFlowAlongOriginalEdge(edge, residualCapacity);
+				}
+				else {
+					PushFlowAlongResidualEdge(edge, residualCapacity);
+				}
+			}
+			else {
+				vertex->currentNeighborSet = vertex->currentNeighborSet->next;
+			}
+		}
+	}
+	return;
+}
+
+SinglyLLSetPtr_t** CreateNeighborList(Graph_t* graph)
+{
+	int i;
+	GraphEdge_t* edge;
+	AdjLLSet_t* adjSet;
+	SinglyLLSetPtr_t** neighborList, * neighborSet;
+	if ((neighborList = malloc(sizeof(SinglyLLSetPtr_t*) * (graph->nVertices + FIRSTVERTEXNUMBER))) == NULL) {
+		printf("\n\t| ERROR | Memory allocator error. No memory allocated |\n\n");
+		return NULL;
+	}
+	for (i = FIRSTVERTEXNUMBER; i < graph->nVertices + FIRSTVERTEXNUMBER; i++) {
+		neighborList[i] = NULL;
+	}
+	for (i = FIRSTVERTEXNUMBER; i < graph->nVertices + FIRSTVERTEXNUMBER; i++) {
+		adjSet = graph->adjList[i];
+		while (adjSet != NULL) {
+			edge = adjSet->edge;
+			if ((neighborSet = SinglyLinkedListCreateSet()) == NULL) {
+				return NULL;
+			}
+			neighborSet->ptr = edge;
+			SinglyLinkedListInsertSet(&neighborList[i], neighborSet);
+			if ((neighborSet = SinglyLinkedListCreateSet()) == NULL) {
+				return NULL;
+			}
+			neighborSet->ptr = edge;
+			SinglyLinkedListInsertSet(&neighborList[edge->destVertex->number], neighborSet);
+			adjSet = adjSet->next;
+		}
+	}
+	return neighborList;
+}
+
+void FreeNeighborList(Graph_t* graph, SinglyLLSetPtr_t** neighborList)
+{
+	int i;
+	SinglyLLSetPtr_t* neighborSet, *neighborSetNext;
+	for (i = FIRSTVERTEXNUMBER; i < graph->nVertices + FIRSTVERTEXNUMBER; i++) {
+		neighborSet = neighborList[i];
+		while (neighborSet != NULL) {
+			neighborSetNext = neighborSet->next;
+			free(neighborSet);
+			neighborSet = neighborSetNext;
+		}
+	}
+	free(neighborList);
+	return;
+}
+
+SinglyLLSetPtr_t* CreateVertexList(Graph_t* graph, GraphVertex_t* source, GraphVertex_t* destination)
+{
+	int i;
+	GraphVertex_t* vertex;
+	SinglyLLSetPtr_t* vertexSet, * vertexList;
+	vertexList = NULL;
+	for (i = FIRSTVERTEXNUMBER; i < graph->nVertices + FIRSTVERTEXNUMBER; i++) {
+		vertex = graph->vertList[i];
+		if (vertex == source || vertex == destination) {
+			continue;
+		}
+		if ((vertexSet = SinglyLinkedListCreateSet()) == NULL) {
+			return NULL;
+		}
+		vertexSet->ptr = vertex;
+		SinglyLinkedListInsertSet(&vertexList, vertexSet);
+	}
+	return vertexList;
+}
+
+void FreeVertexList(SinglyLLSetPtr_t* vertexList)
+{
+	SinglyLLSetPtr_t* vertexSet, * vertexSetNext;
+	vertexSet = vertexList;
+	while (vertexSet != NULL) {
+		vertexSetNext = vertexSet->next;
+		free(vertexSet);
+		vertexSet = vertexSetNext;
+	}
+	return;
+}
+
+SinglyLLSetPtr_t* SinglyLinkedListCreateSet()
+{
+	SinglyLLSetPtr_t* set;
+	if ((set = malloc(sizeof(SinglyLLSetPtr_t))) == NULL) {
+		printf("\n\t| ERROR | Memory allocator error. No memory allocated |\n\n");
+		return NULL;
+	}
+	return set;
+}
+
+SinglyLLSetPtr_t* SinglyLinkedListSearchSet(SinglyLLSetPtr_t** head, void* ptr)
+{
+	SinglyLLSetPtr_t* set;
+	set = *head;
+	while (set != NULL && set->ptr != ptr) {
+		set = set->next;
+	}
+	return set;
+}
+
+SinglyLLSetPtr_t** SinglyLinkedListGetPointerToNextPointerOfPreviousSet(SinglyLLSetPtr_t** head, SinglyLLSetPtr_t* set)
+{
+	SinglyLLSetPtr_t* current, ** prevNextPtr;
+	prevNextPtr = head;
+	current = *head;
+	while (current != set) {
+		prevNextPtr = &current->next;
+		current = current->next;
+	}
+	return prevNextPtr;
+}
+
+void SinglyLinkedListInsertSet(SinglyLLSetPtr_t** head, SinglyLLSetPtr_t* set)
+{
+	set->next = *head;
+	*head = set;
+	return;
+}
+
+void SinglyLinkedListExtractSet(SinglyLLSetPtr_t** head, SinglyLLSetPtr_t* set)
+{
+	SinglyLLSetPtr_t** prevNextPtr;
+	prevNextPtr = SinglyLinkedListGetPointerToNextPointerOfPreviousSet(head, set);
+	*prevNextPtr = set->next;
 	return;
 }

@@ -24,7 +24,10 @@ typedef struct Graph {
 } Graph_t;
 
 typedef struct GraphVertex {
-	struct GraphVertex* parent;
+	union ParentCurrentNeighbor {
+		struct GraphVertex* parent;
+		struct SinglyLinkedListSetPtr* currentNeighborSet;
+	};
 	int number;								/* vertex number (1, 2, ..., n) */
 	int distance;
 	int discovered;
@@ -70,5 +73,10 @@ typedef struct Queue {
 	unsigned int head;
 	unsigned int tail;
 } Queue_t;
+
+typedef struct SinglyLinkedListSetPtr {
+	void* ptr;
+	struct SinglyLinkedListSetPtr* next;
+}SinglyLLSetPtr_t;
 
 #endif
