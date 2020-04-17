@@ -1,6 +1,7 @@
 /* Chapter 26.2 | Maximum-Flow */
 /* Chapter 26.4 | Maximum-Flow */
 /* Chapter 26.5 | Maximum-Flow */
+/* Exercise 26.5-2 | Maximum-Flow */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -15,8 +16,8 @@ int main(void)
 {
 	int i, j, n, cond, action;
 	char* list = "\tList of actions: -1 (EXIT), 0 (List of actions),\n"
-		"1 (CreateGraph), 2 (EdmondsKarp), 3 (GenericPushRelabel), 4 (RelabelToFront)\n"
-		"5 (PrintGraph)\n\n";
+		"1 (CreateGraph), 2 (EdmondsKarp), 3 (GenericPushRelabel), 4 (RelabelToFront), 5 (PushRelabelFIFOQueue)\n"
+		"6 (PrintGraph)\n\n";
 	Graph_t graph;
 	printf(list);
 	graph.nVertices = graph.nEdges = graph.graphType = 0;
@@ -129,10 +130,40 @@ int main(void)
 				printf("\n\t| ERROR | The number must be from 1 to %d |\n\n", graph.nVertices);
 				break;
 			}
-			n = RelabelToFront(&graph, graph.vertList[i], graph.vertList[j]);
+			if ((n = RelabelToFront(&graph, graph.vertList[i], graph.vertList[j])) == FAILURE) {
+				break;
+			}
 			printf("    The flow from source vertex #%d to sink vertex #%d: %d\n", i, j, n);
 			break;
 		case 5:
+			if (graph.nVertices == 0) {
+				printf("\n\t| ERROR | Graph does not exist |\n\n");
+				break;
+			}
+			printf("  Please enter the source vertex number: ");
+			if (scanf("%d", &i) <= 0) {
+				printf("\n\t| ERROR | Incorrect input |\n\n");
+				break;
+			}
+			if (i < 1 || i > graph.nVertices) {
+				printf("\n\t| ERROR | The number must be from 1 to %d |\n\n", graph.nVertices);
+				break;
+			}
+			printf("  Please enter the sink vertex number: ");
+			if (scanf("%d", &j) <= 0) {
+				printf("\n\t| ERROR | Incorrect input |\n\n");
+				break;
+			}
+			if (j < 1 || j > graph.nVertices) {
+				printf("\n\t| ERROR | The number must be from 1 to %d |\n\n", graph.nVertices);
+				break;
+			}
+			if ((n = PushRelabelFIFOQueue(&graph, graph.vertList[i], graph.vertList[j])) == FAILURE) {
+				break;
+			}
+			printf("    The flow from source vertex #%d to sink vertex #%d: %d\n", i, j, n);
+			break;
+		case 6:
 			PrintGraph(&graph);
 			break;
 		default:

@@ -76,7 +76,7 @@ int CreateGraph(Graph_t* graph)
 		vertex->parent = NULL;
 		vertex->number = i;
 		vertex->distance = vertex->discovered = vertex->finished = 0;
-		vertex->u2.color = NOCOLOR;
+		vertex->color = NOCOLOR;
 		graph->vertList[i] = vertex;
 		graph->adjList[i] = NULL;
 	}
@@ -134,7 +134,7 @@ int CreateGraph(Graph_t* graph)
 						}
 						edge->sourceVertex = graph->vertList[i];
 						edge->destVertex = graph->vertList[k];
-						edge->u1.weight = w;
+						edge->weight = w;
 						adjSet->edge = edge;
 						adjSet->next = graph->adjList[i];
 						graph->adjList[i] = adjSet;
@@ -165,7 +165,7 @@ int CreateGraph(Graph_t* graph)
 					adjSet2->edge = adjSet->edge;
 					adjSet2->next = graph->adjList[k];
 					graph->adjList[k] = adjSet2;
-					graph->adjMatrix->value[ItemOfAdjMatrix(k, i, nRows)] = adjSet2->edge->u1.weight;
+					graph->adjMatrix->value[ItemOfAdjMatrix(k, i, nRows)] = adjSet2->edge->weight;
 				}
 				adjSet = adjSet->next;
 			}
@@ -267,7 +267,7 @@ void PrintVertex(GraphVertex_t* vertex)
 {
 	char color[10];
 	if (vertex != NULL) {
-		switch (vertex->u2.color) {
+		switch (vertex->color) {
 		case NOCOLOR:
 			strcpy(color, "NOCOLOR");
 			break;
@@ -295,55 +295,12 @@ void PrintAdjacencyList(AdjLLSet_t* adjSet)
 	if (adjSet != NULL) {
 		printf("  AdjList:");
 		while (adjSet != NULL) {
-			printf(" %d(%d),", adjSet->edge->destVertex->number, adjSet->edge->u1.weight);
+			printf(" %d(%d),", adjSet->edge->destVertex->number, adjSet->edge->weight);
 			adjSet = adjSet->next;
 		}
 		printf("\b ");
 	}
 	return;
-}
-
-int WeightSummarization(int weight1, int weight2)
-{
-	long long int sum;
-	if (weight1 != INFINITY && weight1 != INFINITYMINUS) {
-		if (weight2 != INFINITY && weight2 != INFINITYMINUS) {
-			sum = (long long int)weight1 + (long long int)weight2;
-		}
-		else if (weight2 == INFINITY) {
-			return INFINITY;
-		}
-		else {								/* weight2 = INFINITYMINUS */
-			return INFINITYMINUS;
-		}
-	}
-	else if (weight1 == INFINITY) {
-		if (weight2 == INFINITYMINUS) {
-			return 0;
-		}
-		else {
-			return INFINITY;
-		}
-	}
-	else {									/* weight1 = INFINITYMINUS */
-		if (weight2 == INFINITY) {
-			return 0;
-		}
-		else {
-			return INFINITYMINUS;
-		}
-	}
-	if (sum > INFINITYMINUS && sum < INFINITY) {
-		return (int)sum;
-	}
-	else if (sum >= INFINITY) {
-		printf("\n\t| ERROR | The sum of edges is greater than %d |\n\n", INFINITY - 1);
-		return INFINITY;
-	}
-	else {
-		printf("\n\t| ERROR | The sum of edges is less than %d |\n\n", INFINITYMINUS + 1);
-		return INFINITYMINUS;
-	}
 }
 
 int EdmondsKarp(Graph_t* graph, GraphVertex_t* source, GraphVertex_t* destination)
@@ -357,7 +314,7 @@ int EdmondsKarp(Graph_t* graph, GraphVertex_t* source, GraphVertex_t* destinatio
 	GraphEdge_t* edge, * edgeResidual, * reverseEdgeResidual;
 	AdjLLSet_t* adjSet, * adjSetResidual, * prevAdjSetResidual, * adjSetResidual2, * prevAdjSetResidual2;
 	for (i = 0; i < graph->nEdges; i++) {
-		graph->edgeList[i]->u2.flow = 0;
+		graph->edgeList[i]->flow = 0;
 	}
 	if ((residualGraph = MakeResidualGraph(graph)) == NULL) {
 		return FAILURE;
@@ -384,8 +341,8 @@ int EdmondsKarp(Graph_t* graph, GraphVertex_t* source, GraphVertex_t* destinatio
 				adjSet = adjSet->next;
 			}
 			if (edge != NULL) {
-				if (edge->u1.capacity - edge->u2.flow < residualCapacity) {
-					residualCapacity = edge->u1.capacity - edge->u2.flow;
+				if (edge->capacity - edge->flow < residualCapacity) {
+					residualCapacity = edge->capacity - edge->flow;
 				}
 			}
 			else {
@@ -399,8 +356,8 @@ int EdmondsKarp(Graph_t* graph, GraphVertex_t* source, GraphVertex_t* destinatio
 					adjSet = adjSet->next;
 				}
 				if (edge != NULL) {
-					if (edge->u2.flow < residualCapacity) {
-						residualCapacity = edge->u2.flow;
+					if (edge->flow < residualCapacity) {
+						residualCapacity = edge->flow;
 					}
 				}
 			}
@@ -421,7 +378,7 @@ int EdmondsKarp(Graph_t* graph, GraphVertex_t* source, GraphVertex_t* destinatio
 				adjSet = adjSet->next;
 			}
 			if (edge != NULL) {
-				edge->u2.flow += residualCapacity;
+				edge->flow += residualCapacity;
 			}
 			else {
 				/* determine if the edge from 'destVertexResidual' to 'sourceVertexResidual' belongs the source graph 'graph' */
@@ -434,7 +391,7 @@ int EdmondsKarp(Graph_t* graph, GraphVertex_t* source, GraphVertex_t* destinatio
 					adjSet = adjSet->next;
 				}
 				if (edge != NULL) {
-					edge->u2.flow -= residualCapacity;
+					edge->flow -= residualCapacity;
 				}
 			}
 			/* find the edge from 'sourceVertexResidual' to 'destVertexResidual' of the residual graph 'residualGraph' */
@@ -462,9 +419,9 @@ int EdmondsKarp(Graph_t* graph, GraphVertex_t* source, GraphVertex_t* destinatio
 				adjSetResidual2 = adjSetResidual2->next;
 			}
 			/* modify the residual graph 'residualGraph' */
-			edgeResidual->u1.capacity -= residualCapacity;
+			edgeResidual->capacity -= residualCapacity;
 			/* if the edge capacity of 'residualEdge' is 0, remove the edge */
-			if (edgeResidual->u1.capacity == 0) {
+			if (edgeResidual->capacity == 0) {
 				if (prevAdjSetResidual != NULL) {
 					prevAdjSetResidual->next = adjSetResidual->next;
 				}
@@ -485,8 +442,8 @@ int EdmondsKarp(Graph_t* graph, GraphVertex_t* source, GraphVertex_t* destinatio
 				}
 				reverseEdgeResidual->sourceVertex = destVertexResidual;
 				reverseEdgeResidual->destVertex = sourceVertexResidual;
-				reverseEdgeResidual->u1.capacity = residualCapacity;
-				reverseEdgeResidual->u2.flow = 0;
+				reverseEdgeResidual->capacity = residualCapacity;
+				reverseEdgeResidual->flow = 0;
 				adjSetResidual2->edge = reverseEdgeResidual;
 				adjSetResidual2->next = residualGraph->adjList[destVertexResidual->number];
 				residualGraph->adjList[destVertexResidual->number] = adjSetResidual2;
@@ -531,8 +488,8 @@ Graph_t* MakeResidualGraph(Graph_t* sourceGraph)
 			}
 			edgeResidual->sourceVertex = adjSet->edge->sourceVertex;
 			edgeResidual->destVertex = adjSet->edge->destVertex;
-			edgeResidual->u1.capacity = adjSet->edge->u1.capacity;
-			edgeResidual->u2.flow = adjSet->edge->u2.flow;
+			edgeResidual->capacity = adjSet->edge->capacity;
+			edgeResidual->flow = adjSet->edge->flow;
 			adjSetResidual->edge = edgeResidual;
 			adjSetResidual->next = residualGraph->adjList[i];
 			residualGraph->adjList[i] = adjSetResidual;
@@ -565,11 +522,11 @@ void BreadthFirstSearch(Graph_t* graph, GraphVertex_t* sourceVertex)
 	GraphVertex_t* currentVertex, * descendantVertex;
 	AdjLLSet_t* adjSet;
 	for (i = FIRSTVERTEXNUMBER; i < graph->nVertices + FIRSTVERTEXNUMBER; i++) {
-		graph->vertList[i]->u2.color = WHITE;
+		graph->vertList[i]->color = WHITE;
 		graph->vertList[i]->distance = INT_MAX;
 		graph->vertList[i]->parent = NULL;
 	}
-	sourceVertex->u2.color = BLACK;
+	sourceVertex->color = BLACK;
 	sourceVertex->distance = 0;
 	sourceVertex->parent = NULL;
 	q.size = graph->nVertices;
@@ -584,8 +541,8 @@ void BreadthFirstSearch(Graph_t* graph, GraphVertex_t* sourceVertex)
 		adjSet = graph->adjList[currentVertex->number];
 		while (adjSet != NULL) {
 			descendantVertex = adjSet->edge->destVertex;
-			if (descendantVertex->u2.color == WHITE) {
-				descendantVertex->u2.color = BLACK;
+			if (descendantVertex->color == WHITE) {
+				descendantVertex->color = BLACK;
 				descendantVertex->distance = currentVertex->distance + 1;
 				descendantVertex->parent = currentVertex;
 				Enqueue(&q, descendantVertex);
@@ -641,8 +598,8 @@ int GenericPushRelabel(Graph_t* graph, GraphVertex_t* source, GraphVertex_t* des
 		PushAll(graph, &proceed);
 		RelabelAll(graph, destination, &proceed);
 	}
-	source->u1.excess = ~source->u1.excess + 1;
-	return source->u1.excess;
+	source->excess = ~source->excess + 1;
+	return source->excess;
 }
 
 void InitializePreflow(Graph_t* graph, GraphVertex_t* source)
@@ -650,18 +607,18 @@ void InitializePreflow(Graph_t* graph, GraphVertex_t* source)
 	int i;
 	AdjLLSet_t* adjSet;
 	for (i = FIRSTVERTEXNUMBER; i < graph->nVertices + FIRSTVERTEXNUMBER; i++) {
-		graph->vertList[i]->u1.excess = 0;
-		graph->vertList[i]->u2.height = 0;
+		graph->vertList[i]->excess = 0;
+		graph->vertList[i]->height = 0;
 	}
 	for (i = 0; i < graph->nEdges; i++) {
-		graph->edgeList[i]->u2.flow = 0;
+		graph->edgeList[i]->flow = 0;
 	}
-	source->u2.height = graph->nVertices;
+	source->height = graph->nVertices;
 	adjSet = graph->adjList[source->number];
 	while (adjSet != NULL) {
-		adjSet->edge->u2.flow = adjSet->edge->u1.capacity;
-		adjSet->edge->destVertex->u1.excess = adjSet->edge->u1.capacity;
-		source->u1.excess -= adjSet->edge->u1.capacity;
+		adjSet->edge->flow = adjSet->edge->capacity;
+		adjSet->edge->destVertex->excess = adjSet->edge->capacity;
+		source->excess -= adjSet->edge->capacity;
 		adjSet = adjSet->next;
 	}
 	return;
@@ -677,14 +634,14 @@ void PushAll(Graph_t* graph, int* condition)
 		while (adjSet != NULL) {
 			edge = adjSet->edge;
 			/* original edge */
-			residualCapacity = edge->u1.capacity - edge->u2.flow;
-			if (edge->sourceVertex->u1.excess > 0 && residualCapacity > 0 && edge->sourceVertex->u2.height == edge->destVertex->u2.height + 1) {
+			residualCapacity = edge->capacity - edge->flow;
+			if (edge->sourceVertex->excess > 0 && residualCapacity > 0 && edge->sourceVertex->height == edge->destVertex->height + 1) {
 				PushFlowAlongOriginalEdge(edge, residualCapacity);
 				*condition = true;
 			}
 			/* residual edge */
-			residualCapacity = edge->u2.flow;
-			if (edge->destVertex->u1.excess > 0 && residualCapacity > 0 && edge->destVertex->u2.height == edge->sourceVertex->u2.height + 1) {
+			residualCapacity = edge->flow;
+			if (edge->destVertex->excess > 0 && residualCapacity > 0 && edge->destVertex->height == edge->sourceVertex->height + 1) {
 				PushFlowAlongResidualEdge(edge, residualCapacity);
 				*condition = true;
 			}
@@ -697,21 +654,20 @@ void PushAll(Graph_t* graph, int* condition)
 void PushFlowAlongOriginalEdge(GraphEdge_t* originalEdge, int residualCapacity)
 {
 	int flow;
-	flow = min(originalEdge->sourceVertex->u1.excess, residualCapacity);
-	originalEdge->u2.flow += flow;
-	originalEdge->sourceVertex->u1.excess -= flow;
-	originalEdge->destVertex->u1.excess += flow;
+	flow = min(originalEdge->sourceVertex->excess, residualCapacity);
+	originalEdge->flow += flow;
+	originalEdge->sourceVertex->excess -= flow;
+	originalEdge->destVertex->excess += flow;
 	return;
 }
-
 
 void PushFlowAlongResidualEdge(GraphEdge_t* originalEdge, int residualCapacity)
 {
 	int flow;
-	flow = min(originalEdge->destVertex->u1.excess, residualCapacity);
-	originalEdge->u2.flow -= flow;
-	originalEdge->destVertex->u1.excess -= flow;
-	originalEdge->sourceVertex->u1.excess += flow;
+	flow = min(originalEdge->destVertex->excess, residualCapacity);
+	originalEdge->flow -= flow;
+	originalEdge->destVertex->excess -= flow;
+	originalEdge->sourceVertex->excess += flow;
 	return;
 }
 
@@ -724,7 +680,7 @@ void RelabelAll(Graph_t* graph, GraphVertex_t* destination, int* condition)
 	AdjLLSet_t* adjSet;
 	for (i = FIRSTVERTEXNUMBER; i < graph->nVertices + FIRSTVERTEXNUMBER; i++) {
 		vertex = graph->vertList[i];
-		if (vertex == destination || vertex->u1.excess <= 0) {
+		if (vertex == destination || vertex->excess <= 0) {
 			continue;
 		}
 		relabel = true;
@@ -733,11 +689,11 @@ void RelabelAll(Graph_t* graph, GraphVertex_t* destination, int* condition)
 		while (adjSet != NULL) {
 			edge = adjSet->edge;
 			/* original edge */
-			residualCapacity = edge->u1.capacity - edge->u2.flow;
+			residualCapacity = edge->capacity - edge->flow;
 			if (residualCapacity > 0) {
-				if (vertex->u2.height <= edge->destVertex->u2.height) {
-					if (edge->destVertex->u2.height < minHeight) {
-						minHeight = edge->destVertex->u2.height;
+				if (vertex->height <= edge->destVertex->height) {
+					if (edge->destVertex->height < minHeight) {
+						minHeight = edge->destVertex->height;
 					}
 				}
 				else {
@@ -756,11 +712,11 @@ void RelabelAll(Graph_t* graph, GraphVertex_t* destination, int* condition)
 				if (adjSet->edge->destVertex == vertex) {
 					edge = adjSet->edge;
 					/* residual edge */
-					residualCapacity = edge->u2.flow;
+					residualCapacity = edge->flow;
 					if (residualCapacity > 0) {
-						if (vertex->u2.height <= edge->sourceVertex->u2.height) {
-							if (edge->sourceVertex->u2.height < minHeight) {
-								minHeight = edge->sourceVertex->u2.height;
+						if (vertex->height <= edge->sourceVertex->height) {
+							if (edge->sourceVertex->height < minHeight) {
+								minHeight = edge->sourceVertex->height;
 							}
 						}
 						else {
@@ -783,7 +739,7 @@ void RelabelAll(Graph_t* graph, GraphVertex_t* destination, int* condition)
 
 void RelabelVertex(GraphVertex_t* vertex, int minHeight)
 {
-	vertex->u2.height = minHeight + 1;
+	vertex->height = minHeight + 1;
 	return;
 }
 
@@ -805,9 +761,9 @@ int RelabelToFront(Graph_t* graph, GraphVertex_t* source, GraphVertex_t* destina
 	currentVertexSet = vertexList;
 	while (currentVertexSet != NULL) {
 		vertex = currentVertexSet->ptr;
-		oldHeight = vertex->u2.height;
+		oldHeight = vertex->height;
 		Discharge(vertex, neighborList);
-		if (vertex->u2.height > oldHeight) {
+		if (vertex->height > oldHeight) {
 			SinglyLinkedListExtractSet(&vertexList, currentVertexSet);
 			SinglyLinkedListInsertSet(&vertexList, currentVertexSet);
 		}
@@ -815,8 +771,8 @@ int RelabelToFront(Graph_t* graph, GraphVertex_t* source, GraphVertex_t* destina
 	}
 	FreeNeighborList(graph, neighborList);
 	FreeVertexList(vertexList);
-	source->u1.excess = ~source->u1.excess + 1;
-	return source->u1.excess;
+	source->excess = ~source->excess + 1;
+	return source->excess;
 }
 
 void Discharge(GraphVertex_t* vertex, SinglyLLSetPtr_t** neighborList)
@@ -825,7 +781,7 @@ void Discharge(GraphVertex_t* vertex, SinglyLLSetPtr_t** neighborList)
 	GraphVertex_t* neighborVertex;
 	GraphEdge_t* edge;
 	SinglyLLSetPtr_t* currentNeighborSet;
-	while (vertex->u1.excess > 0) {
+	while (vertex->excess > 0) {
 		if (vertex->currentNeighborSet == NULL) {
 			vertex->currentNeighborSet = currentNeighborSet = neighborList[vertex->number];
 			minHeight = INT_MAX;
@@ -833,15 +789,15 @@ void Discharge(GraphVertex_t* vertex, SinglyLLSetPtr_t** neighborList)
 				edge = currentNeighborSet->ptr;
 				if (vertex == edge->sourceVertex) {
 					neighborVertex = edge->destVertex;
-					residualCapacity = edge->u1.capacity - edge->u2.flow;
+					residualCapacity = edge->capacity - edge->flow;
 				}
 				else {
 					neighborVertex = edge->sourceVertex;
-					residualCapacity = edge->u2.flow;
+					residualCapacity = edge->flow;
 				}
-				if (residualCapacity > 0 && vertex->u2.height <= neighborVertex->u2.height) {
-					if (neighborVertex->u2.height < minHeight) {
-						minHeight = neighborVertex->u2.height;
+				if (residualCapacity > 0 && vertex->height <= neighborVertex->height) {
+					if (neighborVertex->height < minHeight) {
+						minHeight = neighborVertex->height;
 					}
 				}
 				currentNeighborSet = currentNeighborSet->next;
@@ -852,18 +808,127 @@ void Discharge(GraphVertex_t* vertex, SinglyLLSetPtr_t** neighborList)
 			edge = vertex->currentNeighborSet->ptr;
 			if (vertex == edge->sourceVertex) {
 				neighborVertex = edge->destVertex;
-				residualCapacity = edge->u1.capacity - edge->u2.flow;
+				residualCapacity = edge->capacity - edge->flow;
 			}
 			else {
 				neighborVertex = edge->sourceVertex;
-				residualCapacity = edge->u2.flow;
+				residualCapacity = edge->flow;
 			}
-			if (residualCapacity > 0 && vertex->u2.height == neighborVertex->u2.height + 1) {
+			if (residualCapacity > 0 && vertex->height == neighborVertex->height + 1) {
 				if (vertex == edge->sourceVertex) {
 					PushFlowAlongOriginalEdge(edge, residualCapacity);
 				}
 				else {
 					PushFlowAlongResidualEdge(edge, residualCapacity);
+				}
+			}
+			else {
+				vertex->currentNeighborSet = vertex->currentNeighborSet->next;
+			}
+		}
+	}
+	return;
+}
+
+int PushRelabelFIFOQueue(Graph_t* graph, GraphVertex_t* source, GraphVertex_t* destination)
+{
+	int i;
+	Queue_t q;
+	GraphVertex_t* vertex;
+	SinglyLLSetPtr_t** neighborList;
+	AdjLLSet_t* adjSet;
+	q.size = graph->nVertices + 1;
+	if ((q.queue = malloc(sizeof(void*) * q.size)) == NULL) {
+		printf("\n\t| ERROR | Memory allocator error. No memory allocated |\n\n");
+		return FAILURE;
+	}
+	q.head = q.tail = 0;
+	if ((neighborList = CreateNeighborList(graph)) == NULL) {
+		return FAILURE;
+	}
+	InitializePreflow(graph, source);
+	for (i = FIRSTVERTEXNUMBER; i < graph->nVertices + FIRSTVERTEXNUMBER; i++) {
+		graph->vertList[i]->currentNeighborSet = neighborList[i];
+		graph->vertList[i]->mark = false;
+	}
+	/* Source and Sink are not actually in the queue */
+	source->mark = true;
+	destination->mark = true;
+	adjSet = graph->adjList[source->number];
+	while (adjSet != NULL) {
+		/* Source and Sink marks are 'true', hence they will never be queued */
+		if (adjSet->edge->destVertex->mark == false) {
+			Enqueue(&q, adjSet->edge->destVertex);
+			adjSet->edge->destVertex->mark = true;
+		}
+		adjSet = adjSet->next;
+	}
+	while (IsQueueEmpty(&q) != true) {
+		vertex = Dequeue(&q);
+		vertex->mark = false;
+		DischargeFIFOQueue(vertex, neighborList, &q);
+	}
+	FreeNeighborList(graph, neighborList);
+	free(q.queue);
+	source->excess = ~source->excess + 1;
+	return source->excess;
+}
+
+void DischargeFIFOQueue(GraphVertex_t* vertex, SinglyLLSetPtr_t** neighborList, Queue_t* q)
+{
+	int residualCapacity, minHeight;
+	GraphVertex_t* neighborVertex;
+	GraphEdge_t* edge;
+	SinglyLLSetPtr_t* currentNeighborSet;
+	while (vertex->excess > 0) {
+		if (vertex->currentNeighborSet == NULL) {
+			vertex->currentNeighborSet = currentNeighborSet = neighborList[vertex->number];
+			minHeight = INT_MAX;
+			while (currentNeighborSet != NULL) {
+				edge = currentNeighborSet->ptr;
+				if (vertex == edge->sourceVertex) {
+					neighborVertex = edge->destVertex;
+					residualCapacity = edge->capacity - edge->flow;
+				}
+				else {
+					neighborVertex = edge->sourceVertex;
+					residualCapacity = edge->flow;
+				}
+				if (residualCapacity > 0 && vertex->height <= neighborVertex->height) {
+					if (neighborVertex->height < minHeight) {
+						minHeight = neighborVertex->height;
+					}
+				}
+				currentNeighborSet = currentNeighborSet->next;
+			}
+			RelabelVertex(vertex, minHeight);
+		}
+		else {
+			edge = vertex->currentNeighborSet->ptr;
+			if (vertex == edge->sourceVertex) {
+				neighborVertex = edge->destVertex;
+				residualCapacity = edge->capacity - edge->flow;
+			}
+			else {
+				neighborVertex = edge->sourceVertex;
+				residualCapacity = edge->flow;
+			}
+			if (residualCapacity > 0 && vertex->height == neighborVertex->height + 1) {
+				if (vertex == edge->sourceVertex) {
+					PushFlowAlongOriginalEdge(edge, residualCapacity);
+					/* Source and Sink marks are 'true', hence they will never be queued */
+					if (edge->destVertex->mark == false) {
+						Enqueue(q, edge->destVertex);
+						edge->destVertex->mark = true;
+					}
+				}
+				else {
+					PushFlowAlongResidualEdge(edge, residualCapacity);
+					/* Source and Sink marks are 'true', hence they will never be queued */
+					if (edge->sourceVertex->mark == false) {
+						Enqueue(q, edge->sourceVertex);
+						edge->sourceVertex->mark = true;
+					}
 				}
 			}
 			else {
